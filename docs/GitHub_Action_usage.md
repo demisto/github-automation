@@ -1,7 +1,7 @@
 ## GitHub action usage
 
 To get started you will need to configure an `.ini` file which will serve as your configuration file for the project - this file should be in your repository.
-More detailed explanation can be found [here](https://github.com/ronykoz/GitHubProjectManager/blob/master/docs/ini_file.md).
+More detailed explanation can be found [here](https://github.com/demisto/github-automation/blob/master/docs/ini_file.md).
 You will also need to add a secret to your repository configuration called `GITHUB_TOKEN`.
 
 To use the action in case of an event you can set create the following yml in your repo.
