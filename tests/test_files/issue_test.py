@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from copy import deepcopy
 
-from GitHubProjectManager.core.issue.issue import Issue, parse_issue
+from github_automation.core.issue.issue import Issue, parse_issue
 
 
 def test_parse_issue():

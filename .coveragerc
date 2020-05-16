@@ -7,7 +7,7 @@ omit =
 [paths]
 source =
     src/
-    GitHubProjectManager/src
+    github-automation/src
     src
 
 [report]

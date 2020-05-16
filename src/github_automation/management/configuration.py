@@ -135,7 +135,7 @@ class Configuration(object):
         if quiet:
             verbose = 0
 
-        logger: logging.Logger = logging.getLogger('GitHubProjectManager')
+        logger: logging.Logger = logging.getLogger('github-automation')
         logger.setLevel(logging.DEBUG)
         log_level = logging.getLevelName((6 - 2 * verbose) * 10)
         fmt = logging.Formatter('%(message)s')

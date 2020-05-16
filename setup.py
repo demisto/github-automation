@@ -7,8 +7,8 @@ with open('./README.md', 'r') as f:
 
 
 setup(
-    name='GitHubProjectManager',
-    url='https://github.com/ronykoz/GitHubProjectManager',
+    name='github-automation',
+    url='https://github.com/ronykoz/github-automation',
     license='MIT',
     author='Rony Kozakish',
     author_email='',
@@ -26,7 +26,7 @@ setup(
         "GitHub",
         "Project",
         "Manager",
-        "GitHubProjectManager",
+        "github-automation",
         "project",
         "manage",
         "manager"
@@ -35,7 +35,7 @@ setup(
     long_description_content_type='text/markdown',
     python_requires=">=3.7",
     entry_points={
-        'console_scripts': ['GitHubProjectManager = GitHubProjectManager.cli.main:main']
+        'console_scripts': ['github-automation = github_automation.cli.main:main']
     },
     classifiers=[
         'Natural Language :: English',

@@ -1,7 +1,7 @@
 import os
 
-from GitHubProjectManager.management.configuration import Configuration
-from GitHubProjectManager.management.project_manager import ProjectManager
+from github_automation.management.configuration import Configuration
+from github_automation.management.project_manager import ProjectManager
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 

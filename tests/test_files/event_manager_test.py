@@ -2,10 +2,10 @@ import json
 import os
 from copy import deepcopy
 
-from GitHubProjectManager.core.issue.issue import Issue
-from GitHubProjectManager.core.project.project import Project, ProjectColumn
-from GitHubProjectManager.management.configuration import Configuration
-from GitHubProjectManager.management.event_manager import EventManager
+from github_automation.core.issue.issue import Issue
+from github_automation.core.project.project import Project, ProjectColumn
+from github_automation.management.configuration import Configuration
+from github_automation.management.event_manager import EventManager
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 

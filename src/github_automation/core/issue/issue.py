@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 
-from GitHubProjectManager.common.constants import (
-    DEFAULT_PRIORITY_LIST, SAME_LEVEL_PRIORITY_IDENTIFIER)
-from GitHubProjectManager.core.issue.pull_request import (PullRequest,
-                                                          parse_pull_request)
+from github_automation.common.constants import (DEFAULT_PRIORITY_LIST,
+                                                SAME_LEVEL_PRIORITY_IDENTIFIER)
+from github_automation.core.issue.pull_request import (PullRequest,
+                                                       parse_pull_request)
 
 
 def _extract_assignees(assignee_edges):

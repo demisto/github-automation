@@ -1,7 +1,7 @@
 [![](https://github.com/demisto/github-automation/workflows/Python%20package/badge.svg)](https://github.com/demisto/github-automation/actions?query=branch%3Amaster)
 [![Coverage Status](https://coveralls.io/repos/github/demisto/github-automation/badge.svg?branch=add-coverage)](https://coveralls.io/github/demisto/github-automation?branch=add-coverage)
 
-# GitHubProjectManager
+# github-automation
 This tool will help you maintain and organize your GitHub project using an automation tool.
 
 ## Use case
@@ -15,7 +15,7 @@ The supported functionality is:
 * Sorting your issues within your existing columns by their priorities and creation times.
 * Removing issues that fail to meet your issue filters.
 ___
-In order to configure GitHubProjectManager you will need to create an `.ini` file, here is an example:
+In order to configure github-automation you will need to create an `.ini` file, here is an example:
 ```buildoutcfg
 [General]
 closed_issues_column = Done
@@ -63,7 +63,7 @@ In order to use this in a github action please follow this [documentation](https
 ___
 ### Usage
 There are three options to run the tool:
-1. Configure an `.ini` file like described above and then using the `GitHubProjectManager manage -c <path to ini>` command or the `wehbhook-manage` command which is used for events.
+1. Configure an `.ini` file like described above and then using the `github-automation manage -c <path to ini>` command or the `wehbhook-manage` command which is used for events.
 2. Import the code and create some more custom rules for your self, like importing issues from another board(FYI this will be added to the tool as well).
 3. GitHub actions - In order to use this in a github action please follow this [documentation](https://github.com/demisto/github-automation/blob/master/docs/GitHub_Action_usage.md).
 

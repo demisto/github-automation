@@ -23,10 +23,10 @@ jobs:
           python-version: '3.7'
       - name: Get project manager
         run: |
-          pip install GitHubProjectManager
+          pip install github-automation
       - name: Manage project
         run: |
-          GitHubProjectManager webhook-manage -c <The path to your configuration file>
+          github-automation webhook-manage -c <The path to your configuration file>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -48,10 +48,10 @@ jobs:
           python-version: '3.7'
       - name: Get project manager
         run: |
-          pip install GitHubProjectManager
+          pip install github-automation
       - name: Manage project
         run: |
-          GitHubProjectManager manage -c <The path to your configuration file>
+          github-automation manage -c <The path to your configuration file>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

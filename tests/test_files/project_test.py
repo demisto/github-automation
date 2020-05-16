@@ -3,13 +3,13 @@ from __future__ import absolute_import
 import os
 
 import pytest
-from GitHubProjectManager.common.constants import DEFAULT_PRIORITY_LIST
-from GitHubProjectManager.core.issue.issue import Issue
-from GitHubProjectManager.core.project.project import (IssueCard, Project,
-                                                       ProjectColumn,
-                                                       _extract_card_node_data,
-                                                       parse_project)
-from GitHubProjectManager.management.configuration import Configuration
+from github_automation.common.constants import DEFAULT_PRIORITY_LIST
+from github_automation.core.issue.issue import Issue
+from github_automation.core.project.project import (IssueCard, Project,
+                                                    ProjectColumn,
+                                                    _extract_card_node_data,
+                                                    parse_project)
+from github_automation.management.configuration import Configuration
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 

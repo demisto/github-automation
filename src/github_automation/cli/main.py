@@ -5,11 +5,11 @@ import sys
 from pkg_resources import get_distribution
 
 import click
-from GitHubProjectManager.common.constants import (
-    MANAGE_COMMAND_NAME, WEBHOOK_MANAGER_COMMAND_NAME)
-from GitHubProjectManager.management.configuration import Configuration
-from GitHubProjectManager.management.event_manager import EventManager
-from GitHubProjectManager.management.project_manager import ProjectManager
+from github_automation.common.constants import (MANAGE_COMMAND_NAME,
+                                                WEBHOOK_MANAGER_COMMAND_NAME)
+from github_automation.management.configuration import Configuration
+from github_automation.management.event_manager import EventManager
+from github_automation.management.project_manager import ProjectManager
 
 
 @click.group(invoke_without_command=True, no_args_is_help=True, context_settings=dict(max_content_width=100), )
@@ -17,13 +17,13 @@ from GitHubProjectManager.management.project_manager import ProjectManager
     '-h', '--help'
 )
 @click.option(
-    '-v', '--version', help='Get the GitHubProjectManager version.',
+    '-v', '--version', help='Get the github-automation version.',
     is_flag=True, default=False, show_default=True
 )
 def main(version):
     if version:
-        version = get_distribution('GitHubProjectManager').version
-        print(f'GitHubProjectManager {version}')
+        version = get_distribution('github-automation').version
+        print(f'github-automation {version}')
 
 
 @main.command(name=f"{MANAGE_COMMAND_NAME}",

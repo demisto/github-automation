@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import os
 
 import pytest
-from GitHubProjectManager.management.configuration import Configuration
+from github_automation.management.configuration import Configuration
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 

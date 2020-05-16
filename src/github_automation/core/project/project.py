@@ -3,9 +3,9 @@ from __future__ import absolute_import
 from copy import deepcopy
 from typing import Dict, List
 
-from GitHubProjectManager.common.constants import OR
-from GitHubProjectManager.core.issue.issue import Issue, parse_issue
-from GitHubProjectManager.management.configuration import Configuration
+from github_automation.common.constants import OR
+from github_automation.core.issue.issue import Issue, parse_issue
+from github_automation.management.configuration import Configuration
 
 
 def parse_issue_card(card_edge: dict, config: Configuration):
@@ -268,6 +268,7 @@ class Project(object):
     @staticmethod
     def remove_issue(client, issue_title, card_id, config):
         config.logger.info(f'Removing issue {issue_title} from project')
+        client.delete_project_card(card_id)
 
     def sort_issues_in_columns(self, client, config):
         for column_name, column in self.columns.items():

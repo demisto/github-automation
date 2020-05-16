@@ -1,12 +1,11 @@
 from __future__ import absolute_import
 
-from GitHubProjectManager.common.utils import (
-    get_column_issues_with_prev_column, get_first_column_issues)
-from GitHubProjectManager.core.issue.issue import (Issue, get_labels,
-                                                   parse_issue)
-from GitHubProjectManager.core.project.project import Project, parse_project
-from GitHubProjectManager.management.configuration import Configuration
-from GitHubProjectManager.management.github_client import GraphQLClient
+from github_automation.common.utils import (get_column_issues_with_prev_column,
+                                            get_first_column_issues)
+from github_automation.core.issue.issue import Issue, get_labels, parse_issue
+from github_automation.core.project.project import Project, parse_project
+from github_automation.management.configuration import Configuration
+from github_automation.management.github_client import GraphQLClient
 
 
 class ProjectManager(object):

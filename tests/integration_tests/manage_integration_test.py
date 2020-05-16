@@ -5,9 +5,9 @@ import re
 
 import pytest
 from click.testing import CliRunner
-from GitHubProjectManager.cli.main import main
-from GitHubProjectManager.common.constants import (
-    MANAGE_COMMAND_NAME, WEBHOOK_MANAGER_COMMAND_NAME)
+from github_automation.cli.main import main
+from github_automation.common.constants import (MANAGE_COMMAND_NAME,
+                                                WEBHOOK_MANAGER_COMMAND_NAME)
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 
@@ -34,4 +34,4 @@ def test_get_version():
     result = runner.invoke(main, ['-v'])
 
     assert result.exit_code == 0
-    assert re.match(r'GitHubProjectManager \d+.\d+.\d+', result.stdout)
+    assert re.match(r'github-automation \d+.\d+.\d+', result.stdout)
