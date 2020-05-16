@@ -19,8 +19,7 @@ class GraphQLClient(object):
             headers={
                 'Authorization': f"Bearer {api_key}"
             },
-            verify=False,
-            retries=3
+            verify=False
         )
         self.client = Client(
             transport=sample_transport,
