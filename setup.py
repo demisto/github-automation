@@ -10,7 +10,7 @@ setup(
     name='github-automation',
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
-    url='https://github.com/ronykoz/github-automation',
+    url='https://github.com/demisto/github-automation',
     license='MIT',
     author='Rony Kozakish',
     author_email='',
