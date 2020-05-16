@@ -8,7 +8,10 @@ with open('./README.md', 'r') as f:
 
 setup(
     name='github-automation',
-    use_scm_version=True,
+    use_scm_version={
+        'local_scheme': lambda a: ""
+    },
+    setup_requires=['setuptools_scm'],
     url='https://github.com/ronykoz/github-automation',
     license='MIT',
     author='Rony Kozakish',
