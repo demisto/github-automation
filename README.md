@@ -1,5 +1,4 @@
-[![](https://github.com/demisto/github-automation/workflows/Python%20package/badge.svg)](https://github.com/demisto/github-automation/actions?query=branch%3Amaster)
-[![Coverage Status](https://coveralls.io/repos/github/demisto/github-automation/badge.svg?branch=add-coverage)](https://coveralls.io/github/demisto/github-automation?branch=add-coverage)
+![Python package](https://github.com/demisto/github-automation/workflows/Python%20package/badge.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/demisto/github-automation/badge.svg)](https://coveralls.io/github/demisto/github-automation)
 
 # github-automation
 This tool will help you maintain and organize your GitHub project using an automation tool.
