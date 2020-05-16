@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import os
-import re
 
 import pytest
 from click.testing import CliRunner
@@ -34,4 +33,4 @@ def test_get_version():
     result = runner.invoke(main, ['-v'])
 
     assert result.exit_code == 0
-    assert re.match(r'github-automation \d+.\d+.\d+', result.stdout)
+    assert 'github-automation' in result.stdout
