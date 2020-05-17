@@ -199,10 +199,18 @@ def test_matching_issue_filter():
     config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
     config.load_properties()
 
-    assert EventManager.is_matching_issue(['test'], config.must_have_labels, config.cant_have_labels) is True
-    assert EventManager.is_matching_issue(['not test'], config.must_have_labels, config.cant_have_labels) is False
-    assert EventManager.is_matching_issue(['not test', 'test'],
-                                          config.must_have_labels, config.cant_have_labels) is False
+    assert EventManager.is_matching_issue(['bug', 'test'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is True
+    assert EventManager.is_matching_issue(['bug', 'not test'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is False
+    assert EventManager.is_matching_issue(['bug', 'not test', 'test'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is False
+
+    config.filter_labels = ['not bug']
+    assert EventManager.is_matching_issue(['bug', 'test'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is False
+    assert EventManager.is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is True
 
 
 def test_get_prev_column():
@@ -600,7 +608,7 @@ def test_event_manager_flow(mocker):
         title="this is a test title",
         number=1,
         assignees=["ronykoz"],
-        labels=['test', 'Testing']
+        labels=['test', 'Testing', 'bug']
     ))
     mocker.patch.object(EventManager, "load_project_column",
                         return_value=project_object

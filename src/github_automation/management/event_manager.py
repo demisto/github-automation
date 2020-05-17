@@ -30,7 +30,10 @@ class EventManager(object):
         self.client = client if client else GraphQLClient(api_key)
 
     @staticmethod
-    def is_matching_issue(issue_labels, must_have_labels, cant_have_labels):
+    def is_matching_issue(issue_labels, must_have_labels, cant_have_labels, filter_labels):
+        if not any([value for value in filter_labels if value in issue_labels]):
+            return False
+
         for label in must_have_labels:
             if label not in issue_labels:
                 return False
@@ -115,7 +118,8 @@ class EventManager(object):
             self.config.load_properties()
 
             if (self.config.project_number in issue.get_associated_project() or
-                    self.is_matching_issue(issue.labels, self.config.must_have_labels, self.config.cant_have_labels)):
+                    self.is_matching_issue(issue.labels, self.config.must_have_labels, self.config.cant_have_labels,
+                                           self.config.filter_labels)):
                 issue.set_priority(self.config.priority_list)
                 self.manage_issue_in_project(issue)
 
