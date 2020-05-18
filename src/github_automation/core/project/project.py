@@ -43,15 +43,17 @@ def parse_project_column(column_node: dict, config: Configuration):
     return {
         "id": column_node['id'],
         "name": column_node['name'],
-        "cards": _extract_card_node_data(column_node, config)
+        "cards": _extract_card_node_data(column_node, config),
+        "config": config
     }
 
 
 class ProjectColumn(object):
-    def __init__(self, id: str, name: str, cards: List[IssueCard]):
+    def __init__(self, id: str, name: str, cards: List[IssueCard], config: Configuration = None):
         self.id = id
         self.name = name
         self.cards = cards
+        self.config = config
 
     def get_all_issue_ids(self):
         return {card.issue.id for card in self.cards}
@@ -60,8 +62,12 @@ class ProjectColumn(object):
         insert_after_position = len(self.cards) - 1  # In case it should be the lowest issue
         if not self.cards or new_issue > self.cards[0].issue:
             self.cards.insert(0, IssueCard(id=card_id, issue=new_issue))
-            client.add_to_column(card_id=card_id,
-                                 column_id=self.id)
+            try:
+                client.add_to_column(card_id=card_id,
+                                     column_id=self.id)
+            except Exception as ex:
+                self.config.logger.warning(f'The issue {new_issue.title} was not added due to {str(ex)}')
+
             return
 
         for i in range(len(self.cards) - 1):
@@ -71,9 +77,12 @@ class ProjectColumn(object):
 
         self.cards.insert(insert_after_position + 1,
                           IssueCard(id=card_id, issue=new_issue))
-        client.move_to_specific_place_in_column(card_id=card_id,
-                                                column_id=self.id,
-                                                after_card_id=self.cards[insert_after_position].id)
+        try:
+            client.move_to_specific_place_in_column(card_id=card_id,
+                                                    column_id=self.id,
+                                                    after_card_id=self.cards[insert_after_position].id)
+        except Exception as ex:
+            self.config.logger.warning(f'The issue {new_issue.title} was not added due to {str(ex)}')
 
     def get_card_id(self, issue_id):
         for card in self.cards:
@@ -105,12 +114,18 @@ class ProjectColumn(object):
                 self.move_card_in_list(card.id, index)
                 config.logger.info(f"Moving issue '{card.issue_title}' in column '{self.name}' to position: {index}")
                 if index == 0:
-                    client.add_to_column(card_id=card.id,
-                                         column_id=self.id)
+                    try:
+                        client.add_to_column(card_id=card.id,
+                                             column_id=self.id)
+                    except Exception as ex:
+                        config.logger.warning(f'The issue {card.issue_title} was not moved due to {str(ex)}')
                 else:
-                    client.move_to_specific_place_in_column(card_id=card.id,
-                                                            column_id=self.id,
-                                                            after_card_id=sorted_cards[index-1].id)
+                    try:
+                        client.move_to_specific_place_in_column(card_id=card.id,
+                                                                column_id=self.id,
+                                                                after_card_id=sorted_cards[index-1].id)
+                    except Exception as ex:
+                        config.logger.warning(f'The issue {card.issue_title} was not moved due to {str(ex)}')
 
         self.cards = sorted_cards
 
@@ -207,8 +222,12 @@ class Project(object):
         column_id = self.columns[column_name].id if column_name else ''
         config.logger.info("Adding issue '{}' to column '{}'".format(issue.title, column_name))
         if config.project_number not in issue.get_associated_project():
-            response = client.add_issues_to_project(issue.id, column_id)
-            card_id = response['addProjectCard']['cardEdge']['node']['id']
+            try:
+                response = client.add_issues_to_project(issue.id, column_id)
+                card_id = response['addProjectCard']['cardEdge']['node']['id']
+            except Exception as ex:
+                config.logger.warning(f'The issue {issue.title} was not added due to {str(ex)}')
+                return
         else:
             card_id = issue.get_card_id_from_project(config.project_number)
 
@@ -268,7 +287,10 @@ class Project(object):
     @staticmethod
     def remove_issue(client, issue_title, card_id, config):
         config.logger.info(f'Removing issue {issue_title} from project')
-        client.delete_project_card(card_id)
+        try:
+            client.delete_project_card(card_id)
+        except Exception as ex:
+            config.logger.warning(f'The issue {issue_title} was not removed due to {str(ex)}')
 
     def sort_issues_in_columns(self, client, config):
         for column_name, column in self.columns.items():
