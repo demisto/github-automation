@@ -75,7 +75,8 @@ class EventManager(object):
     def manage_issue_in_project(self, issue):
         if (self.config.remove and self.config.project_number in issue.get_associated_project()
                 and not self.is_matching_issue(issue.labels,
-                                               self.config.must_have_labels, self.config.cant_have_labels)):
+                                               self.config.must_have_labels, self.config.cant_have_labels,
+                                               self.config.filter_labels)):
 
             card_id = [_id for _id, value in issue.card_id_project.items()
                        if value['project_number'] == self.config.project_number][0]

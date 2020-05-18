@@ -18,7 +18,10 @@ class ProjectManager(object):
         self.matching_issues = self.get_github_issues()  # todo: add the option to add more filters
 
     @staticmethod
-    def is_matching_issue(issue_labels, must_have_labels, cant_have_labels):
+    def is_matching_issue(issue_labels, must_have_labels, cant_have_labels, filter_labels):
+        if not any([value for value in filter_labels if value in issue_labels]):
+            return False
+
         for label in must_have_labels:
             if label not in issue_labels:
                 return False
@@ -34,7 +37,8 @@ class ProjectManager(object):
         for edge in github_issues['edges']:
             node_data = edge['node']
             issue_labels = get_labels(node_data['labels']['edges'])
-            if self.is_matching_issue(issue_labels, self.config.must_have_labels, self.config.cant_have_labels):
+            if self.is_matching_issue(issue_labels, self.config.must_have_labels, self.config.cant_have_labels,
+                                      self.config.filter_labels):
                 issue = Issue(**parse_issue(node_data), priority_list=self.config.priority_list)
                 issues[issue.id] = issue
 
