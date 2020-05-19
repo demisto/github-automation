@@ -38,6 +38,7 @@ class GraphQLClient(object):
             project(number: $number) {
               name
               id
+              number
               columns(first: 30) {
                   nodes {
                     name
@@ -308,6 +309,7 @@ class GraphQLClient(object):
         project(number: $number) {
           name
           id
+          number
           columns(first: 15) {
             edges{
               cursor
@@ -407,6 +409,7 @@ class GraphQLClient(object):
     project(number: $projectNumber) {
       name
       id
+      number
       columns(after: $prevColumnID, first: 1) {
         nodes {
           name
@@ -454,6 +457,7 @@ class GraphQLClient(object):
         project(number: $projectNumber) {
           name
           id
+          number
           columns(first: 1) {
             nodes {
               name

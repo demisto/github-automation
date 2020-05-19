@@ -144,14 +144,16 @@ def parse_project(git_hub_project, config):
     return {
         "columns": _extract_columns(git_hub_project['columns']['nodes'], config),
         "name": git_hub_project.get("name", 'Not Found'),
+        "number": git_hub_project.get("number", -1),
         "config": config
     }
 
 
 class Project(object):
-    def __init__(self, name: str, columns: Dict[str, ProjectColumn], config: Configuration):
+    def __init__(self, name: str, columns: Dict[str, ProjectColumn], config: Configuration, number: int = None):
         self.name = name
         self.columns = columns
+        self.number = number
 
         self.config = config
 
@@ -206,7 +208,11 @@ class Project(object):
 
     def find_missing_issue_ids(self, issues):
         issues_in_project_keys = set(self.get_all_issue_ids())
-        all_matching_issues = set(issues.keys())
+        all_matching_issues = set()
+        for issue in issues.values():
+            if not any(self.number == value.get('project_number') for value in issue.card_id_project.values()):
+                all_matching_issues.add(issue.id)
+
         return all_matching_issues - issues_in_project_keys
 
     def add_issues(self, client, issues, issues_to_add, config: Configuration):
@@ -216,8 +222,9 @@ class Project(object):
 
     def add_issue(self, client, issue, column_name, config):
         if column_name not in config.column_names:
-            raise Exception(f"Did not found a matching column for your issue, please check your configuration "
-                            f"file. The issue was {issue.title}")
+            config.logger.warning(f"Did not found a matching column for your issue, please check your configuration "
+                                  f"file. The issue was {issue.title}")
+            return
 
         column_id = self.columns[column_name].id if column_name else ''
         config.logger.info("Adding issue '{}' to column '{}'".format(issue.title, column_name))
