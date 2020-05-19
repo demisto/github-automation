@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import json
 
+from github_automation.common.constants import OR
 from github_automation.common.utils import (get_column_issues_with_prev_column,
                                             get_first_column_issues)
 from github_automation.core.issue.issue import Issue, parse_issue
@@ -35,7 +36,12 @@ class EventManager(object):
             return False
 
         for label in must_have_labels:
-            if label not in issue_labels:
+            if OR in label:
+                new_labels = label.split(OR)
+                if not any(new_label not in issue_labels for new_label in new_labels):
+                    return False
+
+            elif label not in issue_labels:
                 return False
 
         for label in cant_have_labels:

@@ -212,6 +212,14 @@ def test_matching_issue_filter():
     assert EventManager.is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
                                           config.filter_labels) is True
 
+    config.must_have_labels = ['test||something']
+    assert EventManager.is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is True
+    assert EventManager.is_matching_issue(['not bug', 'something'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is True
+    assert EventManager.is_matching_issue(['not bug', 'else'], config.must_have_labels, config.cant_have_labels,
+                                          config.filter_labels) is True
+
 
 def test_get_prev_column():
     event = {
