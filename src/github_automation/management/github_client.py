@@ -1,4 +1,5 @@
 import os
+import sys
 
 import requests
 from gql import Client, gql
@@ -28,8 +29,15 @@ class GraphQLClient(object):
 
     def execute_query(self, query, variable_values=None):
         gql_query = gql(query)
-        response = self.client.execute(gql_query, variable_values=variable_values)
-        return response
+        try:
+            response = self.client.execute(gql_query, variable_values=variable_values)
+            return response
+        except Exception as ex:
+            if 'API rate limit exceeded' in str(ex):
+                print("API rate limit exceeded")
+                sys.exit(0)
+
+            raise
 
     def get_github_project(self, owner, name, number):
         return self.execute_query('''
