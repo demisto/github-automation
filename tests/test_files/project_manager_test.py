@@ -430,4 +430,4 @@ def test_matching_issue_filter():
     assert ProjectManager.is_matching_issue(['not bug', 'something'], config.must_have_labels, config.cant_have_labels,
                                             config.filter_labels) is True
     assert ProjectManager.is_matching_issue(['not bug', 'else'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is True
+                                            config.filter_labels) is False

@@ -38,7 +38,7 @@ class EventManager(object):
         for label in must_have_labels:
             if OR in label:
                 new_labels = label.split(OR)
-                if not any(new_label not in issue_labels for new_label in new_labels):
+                if all(new_label not in issue_labels for new_label in new_labels):
                     return False
 
             elif label not in issue_labels:
@@ -90,23 +90,23 @@ class EventManager(object):
             return
 
         matching_column_name = Project.get_matching_column(issue, self.config)
-        project = self.load_project_column(matching_column_name)
 
         if self.config.add and self.config.project_number not in issue.get_associated_project():
+            project = self.load_project_column(matching_column_name)
             project.add_issue(self.client, issue, matching_column_name, self.config)
             return
 
-        if (self.config.add and not all(project.get_current_location(issue.id))  # The issue is in the triage
-                or self.config.move):
-            column_name_before, _ = project.get_current_location(issue.id)
-            if column_name_before != matching_column_name:
-                project.move_issue(self.client, issue, matching_column_name, self.config)
-                return
+        column_name_before = [value['project_column'] for _id, value in issue.card_id_project.items()
+                              if value['project_number'] == self.config.project_number][0]
+        if (self.config.add and not column_name_before) or \
+                (self.config.move and matching_column_name != column_name_before):
+            project = self.load_project_column(matching_column_name)
+            project.move_issue(self.client, issue, matching_column_name, self.config)
+            return
 
-        if self.config.sort:
-            column_name_before, _ = project.get_current_location(issue.id)
-            if column_name_before == matching_column_name:
-                project.columns[matching_column_name].sort_cards(self.client, self.config)
+        if self.config.sort and column_name_before == matching_column_name:
+            project = self.load_project_column(matching_column_name)
+            project.columns[matching_column_name].sort_cards(self.client, self.config)
 
             return
 
