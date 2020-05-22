@@ -114,7 +114,7 @@ class GraphQLClient(object):
                           }
                         }
                         }
-                          timelineItems(first:30, itemTypes:[CROSS_REFERENCED_EVENT]){
+                          timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
                             __typename
                             ... on IssueTimelineItemsConnection{
                               nodes {
@@ -200,7 +200,7 @@ class GraphQLClient(object):
                           }
                         }
                       }
-                      timelineItems(first:30, itemTypes:[CROSS_REFERENCED_EVENT]){
+                      timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
                         __typename
                         ... on IssueTimelineItemsConnection{
                           nodes {
