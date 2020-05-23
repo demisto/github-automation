@@ -587,3 +587,12 @@ class GraphQLClient(object):
   }
 }
 ''', {'query': query, 'start_cursor': start_cursor})
+
+    def un_archive_card(self, card_id):
+        return self.execute_query(''' mutation ($card_id: ID!, $isArchived: Boolean){
+    updateProjectCard(input: {projectCardId: $card_id, isArchived: $isArchived}) {
+      projectCard {
+        isArchived
+      }
+    }
+  }''', {'card_id': card_id, "isArchived": False})

@@ -69,7 +69,17 @@ class ProjectColumn(object):
                 client.add_to_column(card_id=card_id,
                                      column_id=self.id)
             except Exception as ex:
-                self.config.logger.warning(f'The issue {new_issue.title} was not added due to {str(ex)}')
+                exception_msg = str(ex)
+                if 'The card must not be archived' in exception_msg:
+                    try:
+                        client.un_archive_card(card_id)
+                        client.add_to_column(card_id=card_id,
+                                             column_id=self.id)
+                        return
+                    except Exception as ex:
+                        exception_msg += '\n' + str(ex)
+
+                self.config.logger.warning(f'The issue {new_issue.title} was not added due to {exception_msg}')
 
             return
 
@@ -85,7 +95,18 @@ class ProjectColumn(object):
                                                     column_id=self.id,
                                                     after_card_id=self.cards[insert_after_position].id)
         except Exception as ex:
-            self.config.logger.warning(f'The issue {new_issue.title} was not added due to {str(ex)}')
+            exception_msg = str(ex)
+            if 'The card must not be archived' in exception_msg:
+                try:
+                    client.un_archive_card(card_id)
+                    client.move_to_specific_place_in_column(card_id=card_id,
+                                                            column_id=self.id,
+                                                            after_card_id=self.cards[insert_after_position].id)
+                    return
+                except Exception as ex:
+                    exception_msg += '\n' + str(ex)
+
+            self.config.logger.warning(f'The issue {new_issue.title} was not added due to {exception_msg}')
 
     def get_card_id(self, issue_id):
         for card in self.cards:
