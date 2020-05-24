@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 from github_automation.common.constants import OR
 from github_automation.common.utils import (get_column_issues_with_prev_column,
-                                            get_first_column_issues, is_matching_issue)
+                                            get_first_column_issues,
+                                            is_matching_issue)
 from github_automation.core.issue.issue import Issue, get_labels, parse_issue
 from github_automation.core.project.project import Project, parse_project
 from github_automation.management.configuration import Configuration
@@ -90,8 +91,11 @@ class ProjectManager(object):
                       f"{issue_filter} -project:{self.config.project_owner}/"
                       f"{self.config.repository_name}/{self.config.project_number}"
             )
-            issues = issues.extend(response.get('search', {}).get('edges')) if issues else \
-                response.get('search', {}).get('edges', [])
+            if issues:
+                issues.extend(response.get('search', {}).get('edges'))
+
+            else:
+                issues = response.get('search', {}).get('edges', [])
 
             while response.get('search', {}).get('pageInfo').get('hasNextPage'):
                 after = response.get('search', {}).get('pageInfo').get('endCursor')
