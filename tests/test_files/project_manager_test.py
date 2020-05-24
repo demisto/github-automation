@@ -314,33 +314,29 @@ def test_loading():
     }
 
     issues = {
-        "repository": {
-            "issues": {
-                "pageInfo": {
-                    "hasNextPage": True,
-                    "endCursor": "cursor"
-                },
-                "edges": [
-                    {
-                        "node": issue
-                    }
-                ]
-            }
+        "search": {
+            "pageInfo": {
+                "hasNextPage": True,
+                "endCursor": "cursor"
+            },
+            "edges": [
+                {
+                    "node": issue
+                }
+            ]
         }
     }
     issues_with_no_after = {
-        "repository": {
-            "issues": {
-                "pageInfo": {
-                    "hasNextPage": False,
-                    "endCursor": "cursor"
-                },
-                "edges": [
-                    {
-                        "node": issue
-                    }
-                ]
-            }
+        "search": {
+            "pageInfo": {
+                "hasNextPage": False,
+                "endCursor": "cursor"
+            },
+            "edges": [
+                {
+                    "node": issue
+                }
+            ]
         }
     }
 
@@ -372,8 +368,8 @@ def test_loading():
         def get_column_issues(self, **kwargs):
             return column2
 
-        def get_github_issues(self, **kwargs):
-            if not kwargs['after']:
+        def search_issues_by_query(self, **kwargs):
+            if 'start_cursor' not in kwargs:
                 return issues
 
             return issues_with_no_after
@@ -431,3 +427,27 @@ def test_matching_issue_filter():
                                             config.filter_labels) is True
     assert ProjectManager.is_matching_issue(['not bug', 'else'], config.must_have_labels, config.cant_have_labels,
                                             config.filter_labels) is False
+
+
+def test_get_filters():
+    config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
+    config.load_properties()
+
+    filters = ProjectManager.get_filters(config)
+
+    assert len(filters) == 1
+    assert ' label:bug' in filters[0]
+    assert ' label:test' in filters[0]
+    assert '-label:not test' in filters[0]
+
+    config.filter_labels = ['one', 'two']
+    config.must_have_labels = ['three', 'four||five']
+    config.cant_have_labels = ['six', 'seven']
+    filters = ProjectManager.get_filters(config)
+
+    assert len(filters) == 4
+    for filter_str in filters:
+        assert ('label:one' in filter_str and 'label:two' not in filter_str) or ('label:one' not in filter_str
+                                                                                 and 'label:two' in filter_str)
+        assert ('label:four' in filter_str and 'label:five' not in filter_str) or ('label:four' not in filter_str
+                                                                                   and 'label:five' in filter_str)
