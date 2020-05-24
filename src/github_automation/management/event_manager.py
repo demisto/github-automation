@@ -2,9 +2,9 @@ from __future__ import absolute_import
 
 import json
 
-from github_automation.common.constants import OR
 from github_automation.common.utils import (get_column_issues_with_prev_column,
-                                            get_first_column_issues, is_matching_issue)
+                                            get_first_column_issues,
+                                            is_matching_issue)
 from github_automation.core.issue.issue import Issue, parse_issue
 from github_automation.core.project.project import Project, parse_project
 from github_automation.management.configuration import Configuration

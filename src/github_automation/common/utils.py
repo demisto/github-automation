@@ -1,5 +1,6 @@
 from github_automation.common.constants import OR
 
+
 def get_first_column_issues(client, config):
     response = client.get_first_column_issues(owner=config.project_owner,
                                               name=config.repository_name,
