@@ -37,7 +37,7 @@ def get_column_issues_with_prev_column(client, config, prev_cursor):
 
 
 def is_matching_issue(issue_labels, must_have_labels, cant_have_labels, filter_labels):
-    if not any([value for value in filter_labels if value in issue_labels]):
+    if not any([(value in issue_labels) for value in filter_labels]):
         return False
 
     for label in must_have_labels:
