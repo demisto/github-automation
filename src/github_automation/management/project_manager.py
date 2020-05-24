@@ -91,11 +91,7 @@ class ProjectManager(object):
                       f"{issue_filter} -project:{self.config.project_owner}/"
                       f"{self.config.repository_name}/{self.config.project_number}"
             )
-            if issues:
-                issues.extend(response.get('search', {}).get('edges'))
-
-            else:
-                issues = response.get('search', {}).get('edges', [])
+            issues.extend(response.get('search', {}).get('edges', []))
 
             while response.get('search', {}).get('pageInfo').get('hasNextPage'):
                 after = response.get('search', {}).get('pageInfo').get('endCursor')
