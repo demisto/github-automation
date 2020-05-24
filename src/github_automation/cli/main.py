@@ -52,6 +52,7 @@ def manage(**kwargs):
                                       quiet=kwargs['quiet'],
                                       log_path=kwargs['log_path'])
         configuration.load_properties()
+        configuration.logger.info(f'Starting going over the board {conf_path}')
         manager = ProjectManager(configuration=configuration)
         manager.manage()
 

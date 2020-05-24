@@ -59,6 +59,9 @@ class ProjectColumn(object):
     def get_all_issue_ids(self):
         return {card.issue.id for card in self.cards}
 
+    def get_issues(self):
+        return [card.issue for card in self.cards]
+
     def add_card(self, card_id, new_issue, client):
         insert_after_position = len(self.cards) - 1  # In case it should be the lowest issue
         if not self.cards or new_issue > self.cards[0].issue:
@@ -67,7 +70,17 @@ class ProjectColumn(object):
                 client.add_to_column(card_id=card_id,
                                      column_id=self.id)
             except Exception as ex:
-                self.config.logger.warning(f'The issue {new_issue.title} was not added due to {str(ex)}')
+                exception_msg = str(ex)
+                if 'The card must not be archived' in exception_msg:
+                    try:
+                        client.un_archive_card(card_id)
+                        client.add_to_column(card_id=card_id,
+                                             column_id=self.id)
+                        return
+                    except Exception as ex:
+                        exception_msg += '\n' + str(ex)
+
+                self.config.logger.warning(f'The issue {new_issue.title} was not added due to {exception_msg}')
 
             return
 
@@ -83,7 +96,18 @@ class ProjectColumn(object):
                                                     column_id=self.id,
                                                     after_card_id=self.cards[insert_after_position].id)
         except Exception as ex:
-            self.config.logger.warning(f'The issue {new_issue.title} was not added due to {str(ex)}')
+            exception_msg = str(ex)
+            if 'The card must not be archived' in exception_msg:
+                try:
+                    client.un_archive_card(card_id)
+                    client.move_to_specific_place_in_column(card_id=card_id,
+                                                            column_id=self.id,
+                                                            after_card_id=self.cards[insert_after_position].id)
+                    return
+                except Exception as ex:
+                    exception_msg += '\n' + str(ex)
+
+            self.config.logger.warning(f'The issue {new_issue.title} was not added due to {exception_msg}')
 
     def get_card_id(self, issue_id):
         for card in self.cards:
@@ -257,17 +281,19 @@ class Project(object):
 
         return None, None
 
-    def move_issues(self, client, issues, config: Configuration):
+    def move_issues(self, client, config: Configuration):
         # todo: add explanation that we are relying on the github automation to move closed issues to the Done queue
-        for issue in issues.values():
-            column_name_before, card_id = self.get_current_location(issue.id)
-            column_name_after = self.get_matching_column(issue, config)
-            column_id = self.columns[column_name_after].id if column_name_after else ''
-            if not column_id or column_name_before == column_name_after:
-                continue
+        for column in self.columns.values():
+            issues = column.get_issues()
+            for issue in issues:
+                column_name_before, card_id = self.get_current_location(issue.id)
+                column_name_after = self.get_matching_column(issue, config)
+                column_id = self.columns[column_name_after].id if column_name_after else ''
+                if not column_id or column_name_before == column_name_after:
+                    continue
 
-            self.move_issue(client, issue, column_name_after, config)
-            self.columns[column_name_before].remove_card(card_id)
+                self.move_issue(client, issue, column_name_after, config)
+                self.columns[column_name_before].remove_card(card_id)
 
     def move_issue(self, client, issue, column_name, config: Configuration):
         card_id = [_id for _id, value in issue.card_id_project.items()
