@@ -195,32 +195,6 @@ def test_loading_event_manager():
     assert issue_object.title == title
 
 
-def test_matching_issue_filter():
-    config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
-    config.load_properties()
-
-    assert EventManager.is_matching_issue(['bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is True
-    assert EventManager.is_matching_issue(['bug', 'not test'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is False
-    assert EventManager.is_matching_issue(['bug', 'not test', 'test'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is False
-
-    config.filter_labels = ['not bug']
-    assert EventManager.is_matching_issue(['bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is False
-    assert EventManager.is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is True
-
-    config.must_have_labels = ['test||something']
-    assert EventManager.is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is True
-    assert EventManager.is_matching_issue(['not bug', 'something'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is True
-    assert EventManager.is_matching_issue(['not bug', 'else'], config.must_have_labels, config.cant_have_labels,
-                                          config.filter_labels) is False
-
-
 def test_get_prev_column():
     event = {
         "action": "some action",

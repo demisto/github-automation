@@ -1,5 +1,6 @@
 import os
 
+from github_automation.common.utils import is_matching_issue
 from github_automation.management.configuration import Configuration
 from github_automation.management.project_manager import ProjectManager
 
@@ -406,27 +407,27 @@ def test_matching_issue_filter():
     config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
     config.load_properties()
 
-    assert ProjectManager.is_matching_issue(['test', 'bug'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is True
-    assert ProjectManager.is_matching_issue(['not test', 'bug'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is False
-    assert ProjectManager.is_matching_issue(['not test', 'test', 'bug'],
-                                            config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is False
+    assert is_matching_issue(['test', 'bug'], config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is True
+    assert is_matching_issue(['not test', 'bug'], config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is False
+    assert is_matching_issue(['not test', 'test', 'bug'],
+                             config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is False
 
     config.filter_labels = ['not bug']
-    assert ProjectManager.is_matching_issue(['bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is False
-    assert ProjectManager.is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is True
+    assert is_matching_issue(['bug', 'test'], config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is False
+    assert is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is True
 
     config.must_have_labels = ['test||something']
-    assert ProjectManager.is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is True
-    assert ProjectManager.is_matching_issue(['not bug', 'something'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is True
-    assert ProjectManager.is_matching_issue(['not bug', 'else'], config.must_have_labels, config.cant_have_labels,
-                                            config.filter_labels) is False
+    assert is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is True
+    assert is_matching_issue(['not bug', 'something'], config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is True
+    assert is_matching_issue(['not bug', 'else'], config.must_have_labels, config.cant_have_labels,
+                             config.filter_labels) is False
 
 
 def test_get_filters():
