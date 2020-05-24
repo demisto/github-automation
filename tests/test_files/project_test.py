@@ -390,20 +390,11 @@ def test_removing_issues():
     assert len(project.get_all_issue_ids()) == 1
     assert len(project.columns.keys()) == 2
 
-    issue = Issue(
-        id="1",
-        number=1,
-        title="1"
-    )
-    issues = {
-        1: issue
-    }
-
     class ClientMock(object):
         def delete_project_card(self, **kwargs):
             return
 
-    project.remove_issues(ClientMock, issues, config)
+    project.remove_issues(ClientMock, config)
     assert project.get_all_issue_ids() == set()
 
 

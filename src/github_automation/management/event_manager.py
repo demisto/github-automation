@@ -2,9 +2,9 @@ from __future__ import absolute_import
 
 import json
 
-from github_automation.common.constants import OR
 from github_automation.common.utils import (get_column_issues_with_prev_column,
-                                            get_first_column_issues)
+                                            get_first_column_issues,
+                                            is_matching_issue)
 from github_automation.core.issue.issue import Issue, parse_issue
 from github_automation.core.project.project import Project, parse_project
 from github_automation.management.configuration import Configuration
@@ -29,26 +29,6 @@ class EventManager(object):
 
         self.event = json.loads(event)
         self.client = client if client else GraphQLClient(api_key)
-
-    @staticmethod
-    def is_matching_issue(issue_labels, must_have_labels, cant_have_labels, filter_labels):
-        if not any([value for value in filter_labels if value in issue_labels]):
-            return False
-
-        for label in must_have_labels:
-            if OR in label:
-                new_labels = label.split(OR)
-                if all(new_label not in issue_labels for new_label in new_labels):
-                    return False
-
-            elif label not in issue_labels:
-                return False
-
-        for label in cant_have_labels:
-            if label in issue_labels:
-                return False
-
-        return True
 
     @staticmethod
     def get_issue_number(event):
@@ -80,9 +60,10 @@ class EventManager(object):
 
     def manage_issue_in_project(self, issue):
         if (self.config.remove and self.config.project_number in issue.get_associated_project()
-                and not self.is_matching_issue(issue.labels,
-                                               self.config.must_have_labels, self.config.cant_have_labels,
-                                               self.config.filter_labels)):
+                and not is_matching_issue(issue.labels,
+                                          self.config.must_have_labels,
+                                          self.config.cant_have_labels,
+                                          self.config.filter_labels)):
 
             card_id = [_id for _id, value in issue.card_id_project.items()
                        if value['project_number'] == self.config.project_number][0]
@@ -125,8 +106,8 @@ class EventManager(object):
             self.config.load_properties()
 
             if (self.config.project_number in issue.get_associated_project() or
-                    self.is_matching_issue(issue.labels, self.config.must_have_labels, self.config.cant_have_labels,
-                                           self.config.filter_labels)):
+                    is_matching_issue(issue.labels, self.config.must_have_labels, self.config.cant_have_labels,
+                                      self.config.filter_labels)):
                 issue.set_priority(self.config.priority_list)
                 self.manage_issue_in_project(issue)
 
