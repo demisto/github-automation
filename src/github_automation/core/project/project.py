@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import Dict, List
 
 from github_automation.common.constants import OR
+from github_automation.common.utils import is_matching_issue
 from github_automation.core.issue.issue import Issue, parse_issue
 from github_automation.management.configuration import Configuration
 
@@ -277,14 +278,15 @@ class Project(object):
                                            new_issue=issue,
                                            client=client)
 
-    def remove_issues(self, client, issues, config: Configuration):
+    def remove_issues(self, client, config: Configuration):
         for column in self.columns.values():
             if column.name == config.closed_issues_column:  # Not going over closed issues
                 continue
 
             indexes_to_delete = []
             for index, card in enumerate(column.cards):
-                if card.issue_id not in issues:
+                if not is_matching_issue(card.issue.labels, config.must_have_labels,
+                                         config.cant_have_labels, config.filter_labels):
                     indexes_to_delete.append(index)
                     self.remove_issue(client, card.issue_title, card.id, config)
 

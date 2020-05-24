@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from github_automation.common.constants import OR
 from github_automation.common.utils import (get_column_issues_with_prev_column,
-                                            get_first_column_issues)
+                                            get_first_column_issues, is_matching_issue)
 from github_automation.core.issue.issue import Issue, get_labels, parse_issue
 from github_automation.core.project.project import Project, parse_project
 from github_automation.management.configuration import Configuration
@@ -18,33 +18,13 @@ class ProjectManager(object):
         self.project = self.get_github_project()
         self.matching_issues = self.get_github_issues()  # todo: add the option to add more filters
 
-    @staticmethod
-    def is_matching_issue(issue_labels, must_have_labels, cant_have_labels, filter_labels):
-        if not any([value for value in filter_labels if value in issue_labels]):
-            return False
-
-        for label in must_have_labels:
-            if OR in label:
-                new_labels = label.split(OR)
-                if all(new_label not in issue_labels for new_label in new_labels):
-                    return False
-
-            elif label not in issue_labels:
-                return False
-
-        for label in cant_have_labels:
-            if label in issue_labels:
-                return False
-
-        return True
-
     def construct_issue_object(self, github_issues):
         issues = {}
         for edge in github_issues['edges']:
             node_data = edge['node']
             issue_labels = get_labels(node_data['labels']['edges'])
-            if self.is_matching_issue(issue_labels, self.config.must_have_labels, self.config.cant_have_labels,
-                                      self.config.filter_labels):
+            if is_matching_issue(issue_labels, self.config.must_have_labels, self.config.cant_have_labels,
+                                 self.config.filter_labels):
                 issue = Issue(**parse_issue(node_data), priority_list=self.config.priority_list)
                 issues[issue.id] = issue
 
@@ -94,7 +74,7 @@ class ProjectManager(object):
 
     def manage(self):
         if self.config.remove:  # Better to first remove issues that should not be in the board
-            self.project.remove_issues(self.client, self.matching_issues, self.config)
+            self.project.remove_issues(self.client, self.config)
 
         if self.config.add:
             self.add_issues_to_project()
