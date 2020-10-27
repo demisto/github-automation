@@ -510,89 +510,11 @@ class GraphQLClient(object):
     }
     ''', {"owner": owner, "name": name, "projectNumber": project_number, "$start_cards_cursor": start_cards_cursor})
 
-    def search_issues_by_query(self, query, start_cursor=None):
-        return self.execute_query('''
-        query ($query: String!, $start_cursor: String){
-  search(type: ISSUE, query: $query, first: 100, after: $start_cursor) {
-    ... on SearchResultItemConnection {
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-      issueCount
-      edges {
-        cursor
-        node {
-          ... on Issue {
-            title
-            number
-            id
-            labels(first:10) {
-              edges {
-                node {
-                  name
-                }
-              }
-            }
-            milestone {
-              title
-            }
-            assignees(last: 10) {
-              edges {
-                node {
-                  id
-                  login
-                }
-              }
-            }
-            timelineItems(first: 10, itemTypes: [CROSS_REFERENCED_EVENT]) {
-              __typename
-              ... on IssueTimelineItemsConnection {
-                nodes {
-                  ... on CrossReferencedEvent {
-                    willCloseTarget
-                    source {
-                      __typename
-                      ... on PullRequest {
-                        state
-                        isDraft
-                        assignees(first: 10) {
-                          nodes {
-                            login
-                          }
-                        }
-                        labels(first: 5) {
-                          nodes {
-                            name
-                          }
-                        }
-                        reviewRequests(first: 1) {
-                          totalCount
-                        }
-                        reviews(first: 1) {
-                          totalCount
-                        }
-                        number
-                        reviewDecision
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-''', {'query': query, 'start_cursor': start_cursor})
-
     def un_archive_card(self, card_id):
         return self.execute_query(''' mutation ($card_id: ID!, $isArchived: Boolean){
-    updateProjectCard(input: {projectCardId: $card_id, isArchived: $isArchived}) {
-      projectCard {
-        isArchived
-      }
-    }
-  }''', {'card_id': card_id, "isArchived": False})
+        updateProjectCard(input: {projectCardId: $card_id, isArchived: $isArchived}) {
+          projectCard {
+            isArchived
+          }
+        }
+      }''', {'card_id': card_id, "isArchived": False})

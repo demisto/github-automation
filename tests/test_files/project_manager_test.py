@@ -1,6 +1,5 @@
 import os
 
-from github_automation.common.utils import is_matching_issue
 from github_automation.management.configuration import Configuration
 from github_automation.management.project_manager import ProjectManager
 
@@ -315,29 +314,33 @@ def test_loading():
     }
 
     issues = {
-        "search": {
-            "pageInfo": {
-                "hasNextPage": True,
-                "endCursor": "cursor"
-            },
-            "edges": [
-                {
-                    "node": issue
-                }
-            ]
+        "repository": {
+            "issues": {
+                "pageInfo": {
+                    "hasNextPage": True,
+                    "endCursor": "cursor"
+                },
+                "edges": [
+                    {
+                        "node": issue
+                    }
+                ]
+            }
         }
     }
     issues_with_no_after = {
-        "search": {
-            "pageInfo": {
-                "hasNextPage": False,
-                "endCursor": "cursor"
-            },
-            "edges": [
-                {
-                    "node": issue
-                }
-            ]
+        "repository": {
+            "issues": {
+                "pageInfo": {
+                    "hasNextPage": False,
+                    "endCursor": "cursor"
+                },
+                "edges": [
+                    {
+                        "node": issue
+                    }
+                ]
+            }
         }
     }
 
@@ -369,8 +372,8 @@ def test_loading():
         def get_column_issues(self, **kwargs):
             return column2
 
-        def search_issues_by_query(self, **kwargs):
-            if 'start_cursor' not in kwargs:
+        def get_github_issues(self, **kwargs):
+            if not kwargs['after']:
                 return issues
 
             return issues_with_no_after
@@ -401,54 +404,3 @@ def test_loading():
     manager.manage()
     assert manager.project.is_in_column("In progress", issue_id) is True
     assert manager.project.columns["In progress"].cards[0].issue.id == issue_id
-
-
-def test_matching_issue_filter():
-    config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
-    config.load_properties()
-
-    assert is_matching_issue(['test', 'bug'], config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is True
-    assert is_matching_issue(['not test', 'bug'], config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is False
-    assert is_matching_issue(['not test', 'test', 'bug'],
-                             config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is False
-
-    config.filter_labels = ['not bug']
-    assert is_matching_issue(['bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is False
-    assert is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is True
-
-    config.must_have_labels = ['test||something']
-    assert is_matching_issue(['not bug', 'test'], config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is True
-    assert is_matching_issue(['not bug', 'something'], config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is True
-    assert is_matching_issue(['not bug', 'else'], config.must_have_labels, config.cant_have_labels,
-                             config.filter_labels) is False
-
-
-def test_get_filters():
-    config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
-    config.load_properties()
-
-    filters = ProjectManager.get_filters(config)
-
-    assert len(filters) == 1
-    assert ' label:bug' in filters[0]
-    assert ' label:test' in filters[0]
-    assert '-label:not test' in filters[0]
-
-    config.filter_labels = ['one', 'two']
-    config.must_have_labels = ['three', 'four||five']
-    config.cant_have_labels = ['six', 'seven']
-    filters = ProjectManager.get_filters(config)
-
-    assert len(filters) == 4
-    for filter_str in filters:
-        assert ('label:one' in filter_str and 'label:two' not in filter_str) or ('label:one' not in filter_str
-                                                                                 and 'label:two' in filter_str)
-        assert ('label:four' in filter_str and 'label:five' not in filter_str) or ('label:four' not in filter_str
-                                                                                   and 'label:five' in filter_str)
