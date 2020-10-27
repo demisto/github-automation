@@ -66,16 +66,19 @@ def parse_issue(github_issue):
         "pull_request": _get_pull_request(github_issue),
         "labels": get_labels(github_issue.get('labels', {}).get('edges', [])),
         "milestone": _get_milestone(github_issue),
-        "card_id_to_project": _extract_project_cards(github_issue.get('projectCards', {}))
+        "card_id_to_project": _extract_project_cards(github_issue.get('projectCards', {})),
+        "state": github_issue.get('state', '')
     }
 
 
 class Issue(object):
     def __init__(self, id: str, title: str, number: int, assignees: list = None, pull_request: PullRequest = None,
-                 labels: list = None, milestone: str = '', card_id_to_project: dict = None, priority_list: list = None):
+                 labels: list = None, milestone: str = '', card_id_to_project: dict = None, priority_list: list = None,
+                 state: str = ''):
         self.id = id
         self.title = title
         self.number = number
+        self.state = state
 
         self.assignees = assignees if assignees else []
         self.pull_request = pull_request

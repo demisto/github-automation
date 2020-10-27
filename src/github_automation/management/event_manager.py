@@ -99,6 +99,9 @@ class EventManager(object):
 
     def run(self):
         issue = self.get_issue_object()
+        if issue.state == 'closed':
+            print("The issue is closed, not taking an action.")
+            return
 
         for conf_path in self.conf_paths:
             self.config = Configuration(conf_path, self.verbose, self.quiet, self.log_path)

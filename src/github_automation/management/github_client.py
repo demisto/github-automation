@@ -386,6 +386,7 @@ class GraphQLClient(object):
       title
       id
       number
+      state
       milestone {
         title
       }
