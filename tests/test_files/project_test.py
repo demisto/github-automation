@@ -524,3 +524,7 @@ def test_move_issues():
     project.move_issues(MockClient(), config, {'1': issue})
     assert project.is_in_column("Queue", "1") is False
     assert project.is_in_column("In progress", "1") is True
+
+    issue.state = 'closed'
+    project.move_issue(MockClient(), issue, 'In progress', config)
+    assert project.is_in_column("In progress", "1") is True
