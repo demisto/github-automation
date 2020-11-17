@@ -294,6 +294,10 @@ class Project(object):
             self.columns[column_name_before].remove_card(card_id)
 
     def move_issue(self, client, issue, column_name, config: Configuration):
+        if issue.state == 'closed':
+            config.logger.debug(f'skipping {issue.title} because the issue is closed')
+            return
+
         card_id = [_id for _id, value in issue.card_id_project.items()
                    if value['project_number'] == config.project_number][0]
 
