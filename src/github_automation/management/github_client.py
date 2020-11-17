@@ -446,6 +446,13 @@ class GraphQLClient(object):
                         }
                       }
                     }
+                    assignees(first: 10) {
+                      edges {
+                        node {
+                          login
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -491,6 +498,13 @@ class GraphQLClient(object):
                           edges {
                             node {
                               name
+                            }
+                          }
+                        }
+                        assignees(first: 10) {
+                          edges {
+                            node {
+                              login
                             }
                           }
                         }

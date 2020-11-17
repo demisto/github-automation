@@ -83,4 +83,4 @@ class ProjectManager(object):
             self.project.sort_issues_in_columns(self.client, self.config)
 
         if self.config.move:
-            self.project.move_issues(self.client, self.config)
+            self.project.move_issues(self.client, self.config, self.matching_issues)

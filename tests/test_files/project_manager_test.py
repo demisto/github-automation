@@ -195,7 +195,7 @@ def test_loading():
                         "columns": {
                             "nodes": [
                                 {
-                                    "name": "testing"
+                                    "name": "Queue"
                                 }
                             ]
                         }
@@ -208,7 +208,7 @@ def test_loading():
                         "columns": {
                             "nodes": [
                                 {
-                                    "name": "Queue"
+                                    "name": "In progress"
                                 }
                             ]
                         }
@@ -399,8 +399,10 @@ def test_loading():
     assert issues == ['issue 3', 'issue 2']
 
     manager.project.columns['In progress'].remove_card("56565=")
-    assert manager.project.is_in_column("In progress", "56567=") is False
+    issues = [card.issue.title for card in manager.project.columns['In progress'].cards]
+    assert len(issues) == 1
+    assert manager.project.is_in_column("In progress", "1234=") is True
+    assert manager.project.is_in_column("In progress", "56565=") is False
 
     manager.manage()
-    assert manager.project.is_in_column("In progress", issue_id) is True
-    assert manager.project.columns["In progress"].cards[0].issue.id == issue_id
+    assert manager.project.is_in_column("In progress", "56565=") is False
