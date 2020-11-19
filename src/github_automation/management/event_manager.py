@@ -70,7 +70,7 @@ class EventManager(object):
             return
 
         matching_column_name = Project.get_matching_column(issue, self.config)
-        self.config.logger(f"the right column is {matching_column_name}")
+        print(f"the right column is {matching_column_name}")
 
         if self.config.add and self.config.project_number not in issue.get_associated_project():
             project = self.load_project_column(matching_column_name)
@@ -79,7 +79,7 @@ class EventManager(object):
 
         column_name_before = [value['project_column'] for _id, value in issue.card_id_project.items()
                               if value['project_number'] == self.config.project_number][0]
-        self.config.logger(f"the column was {column_name_before}")
+        print(f"the column was {column_name_before}")
         if (self.config.add and not column_name_before) or \
                 (self.config.move and matching_column_name != column_name_before):
             project = self.load_project_column(matching_column_name)
