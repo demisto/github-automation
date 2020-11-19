@@ -80,6 +80,7 @@ class EventManager(object):
                               if value['project_number'] == self.config.project_number][0]
         if (self.config.add and not column_name_before) or \
                 (self.config.move and matching_column_name != column_name_before):
+            print(f'Moving {issue.title} from {column_name_before}')
             project = self.load_project_column(matching_column_name)
             project.move_issue(self.client, issue, matching_column_name, self.config)
             return
