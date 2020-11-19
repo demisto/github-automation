@@ -465,7 +465,7 @@ class GraphQLClient(object):
   }
 }
 ''', {"owner": owner, "name": name, "projectNumber": project_number, "prevColumnID": prev_column_id,
-            "$start_cards_cursor": start_cards_cursor})
+            "start_cards_cursor": start_cards_cursor})
 
     def get_first_column_issues(self, owner, name, project_number, start_cards_cursor=''):
         return self.execute_query('''
@@ -524,7 +524,7 @@ class GraphQLClient(object):
         }
       }
     }
-    ''', {"owner": owner, "name": name, "projectNumber": project_number, "$start_cards_cursor": start_cards_cursor})
+    ''', {"owner": owner, "name": name, "projectNumber": project_number, "start_cards_cursor": start_cards_cursor})
 
     def un_archive_card(self, card_id):
         return self.execute_query(''' mutation ($card_id: ID!, $isArchived: Boolean){
