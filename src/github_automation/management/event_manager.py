@@ -97,6 +97,7 @@ class EventManager(object):
         issue_response = self.client.get_issue(
             self.project_owner, self.repository_name, issue_number)  # need to address the remove here
         issue = Issue(**parse_issue(issue_response['repository']['issue']))
+        print(issue_response['repository']['issue'])
         return issue
 
     def run(self):
