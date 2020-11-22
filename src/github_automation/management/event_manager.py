@@ -32,7 +32,11 @@ class EventManager(object):
 
     @staticmethod
     def get_issue_number(event):
-        return event['issue']['number']
+        if 'issue' in event:
+            return event['issue']['number']
+        else:
+            print("This is not an issue, and we still do not support other github entities in the project.")
+            return
 
     def get_prev_column_cursor(self, column_name):
         layout = self.client.get_project_layout(owner=self.config.project_owner,
@@ -93,6 +97,9 @@ class EventManager(object):
 
     def get_issue_object(self):
         issue_number = self.get_issue_number(self.event)
+        if issue_number is None:
+            return   # In case the event is not for an issue
+
         issue_response = self.client.get_issue(
             self.project_owner, self.repository_name, issue_number)  # need to address the remove here
         issue = Issue(**parse_issue(issue_response['repository']['issue']))
@@ -100,6 +107,9 @@ class EventManager(object):
 
     def run(self):
         issue = self.get_issue_object()
+        if issue is None:
+            return  # In case the event is not for an issue
+
         if issue.state == 'closed':
             print("The issue is closed, not taking an action.")
             return

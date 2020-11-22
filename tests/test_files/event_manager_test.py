@@ -611,3 +611,22 @@ def test_event_manager_flow(mocker):
                            event=json.dumps({"text": "text"}))
     manager.run()
     assert len(project_object.get_all_issue_ids()) == 1
+
+
+def test_loading_event_manager_without_an_issue():
+    event = {
+        "action": "some action",
+        "pull_request": {
+            "number": 1
+        }
+    }
+
+    class mock_client(object):
+        def get_issue(*args, **kwargs):
+            return
+
+    client = mock_client()
+    manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(event))
+
+    issue_object = manager.get_issue_object()
+    assert issue_object is None
