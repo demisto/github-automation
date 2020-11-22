@@ -104,15 +104,13 @@ class GraphQLClient(object):
                         projectCards(first:5){
                         nodes{
                           id
+                          column {
+                            name
+                          }
                           project{
                             number
-                            columns(first:1){
-                              nodes {
-                                name
-                              }
                             }
                           }
-                        }
                         }
                           timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
                             __typename
@@ -191,13 +189,11 @@ class GraphQLClient(object):
                         projectCards(first:5){
                         nodes{
                           id
+                          column {
+                            name
+                          }
                           project{
                             number
-                            columns(first:1){
-                              nodes {
-                                name
-                              }
-                            }
                           }
                         }
                       }
@@ -339,13 +335,11 @@ class GraphQLClient(object):
       projectCards(first:5){
         nodes{
           id
+          column {
+            name
+          }
           project{
             number
-            columns(first:1){
-              nodes {
-                name
-              }
-            }
           }
         }
       }

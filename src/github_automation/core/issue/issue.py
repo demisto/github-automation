@@ -52,7 +52,7 @@ def _extract_project_cards(project_cards):
             "project_number": node['project']['number']
         }
         if node['project']['columns']['nodes']:
-            card_id_project[node['id']]['project_column'] = node['project']['columns']['nodes'][0]['name']
+            card_id_project[node['id']]['project_column'] = node['column']['name']
 
     return card_id_project
 
