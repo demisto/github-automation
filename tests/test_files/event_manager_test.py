@@ -21,28 +21,20 @@ def test_loading_event_manager():
             "nodes": [
                 {
                     "id": "id=",
+                    "column": {
+                        "name": "testing"
+                    },
                     "project": {
-                        "number": 1,
-                        "columns": {
-                            "nodes": [
-                                {
-                                    "name": "testing"
-                                }
-                            ]
-                        }
+                        "number": 1
                     }
                 },
                 {
                     "id": "id2=",
+                    "column": {
+                        "name": "Queue"
+                    },
                     "project": {
-                        "number": 2,
-                        "columns": {
-                            "nodes": [
-                                {
-                                    "name": "Queue"
-                                }
-                            ]
-                        }
+                        "number": 2
                     }
                 }
             ]

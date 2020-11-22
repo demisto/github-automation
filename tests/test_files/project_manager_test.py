@@ -190,28 +190,20 @@ def test_loading():
             "nodes": [
                 {
                     "id": "id=",
+                    "column": {
+                        "name": "Queue"
+                    },
                     "project": {
-                        "number": 1,
-                        "columns": {
-                            "nodes": [
-                                {
-                                    "name": "Queue"
-                                }
-                            ]
-                        }
+                        "number": 1
                     }
                 },
                 {
                     "id": "id2=",
+                    "column": {
+                        "name": "In progress"
+                    },
                     "project": {
-                        "number": 2,
-                        "columns": {
-                            "nodes": [
-                                {
-                                    "name": "In progress"
-                                }
-                            ]
-                        }
+                        "number": 2
                     }
                 }
             ]
