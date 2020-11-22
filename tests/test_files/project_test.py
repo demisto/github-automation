@@ -516,11 +516,15 @@ def test_move_issues():
         def move_to_specific_place_in_column(*args, **kwargs):
             return
 
-    project.move_issues(MockClient(), config)
+    project.move_issues(MockClient(), config, {'1': issue})
     assert project.is_in_column("Queue", "1") is False
     assert project.is_in_column("In progress", "1") is True
 
     # Move within the same column
-    project.move_issues(MockClient(), config)
+    project.move_issues(MockClient(), config, {'1': issue})
     assert project.is_in_column("Queue", "1") is False
+    assert project.is_in_column("In progress", "1") is True
+
+    issue.state = 'closed'
+    project.move_issue(MockClient(), issue, 'In progress', config)
     assert project.is_in_column("In progress", "1") is True

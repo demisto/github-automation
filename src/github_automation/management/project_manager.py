@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-from github_automation.common.constants import OR
 from github_automation.common.utils import (get_column_issues_with_prev_column,
                                             get_first_column_issues,
                                             is_matching_issue)
@@ -21,7 +20,7 @@ class ProjectManager(object):
 
     def construct_issue_object(self, github_issues):
         issues = {}
-        for edge in github_issues:
+        for edge in github_issues['edges']:
             node_data = edge['node']
             issue_labels = get_labels(node_data['labels']['edges'])
             if is_matching_issue(issue_labels, self.config.must_have_labels, self.config.cant_have_labels,
@@ -50,58 +49,22 @@ class ProjectManager(object):
 
         return Project(**parse_project(project_builder['repository']['project'], self.config))
 
-    @staticmethod
-    def construct_filters(cant_have_string, milestone_string, must_labels_string, or_labels, filter_labels):
-        filters = []
-        base_filter = f'{cant_have_string} {milestone_string} {must_labels_string}'
-        for filter_label in filter_labels:
-            filter_string = f'{base_filter} label:{filter_label}'
-            if or_labels:
-                for or_label in or_labels:
-                    filters.append(f'{filter_string} label:{or_label}')
-            else:
-                filters.append(filter_string)
-
-        return filters
-
-    @staticmethod
-    def get_filters(config):
-        cant_have_string = ' '.join([f'-label:{cant_have_label}' for cant_have_label in config.cant_have_labels])
-        milestone_string = f'milestone:{config.filter_milestone}' if config.filter_milestone else ''
-
-        must_labels = []
-        or_labels = []
-        for must_label in config.must_have_labels:
-            if OR in must_label:
-                or_labels.extend(must_label.split(OR))
-            else:
-                must_labels.append(must_label)
-
-        must_labels_string = ' '.join([f'label:{must_label}' for must_label in must_labels])
-
-        filters = ProjectManager.construct_filters(cant_have_string, milestone_string, must_labels_string, or_labels,
-                                                   config.filter_labels)
-        return filters
-
     def get_github_issues(self):
-        issues = []
-        for issue_filter in self.get_filters(self.config):
-            response = self.client.search_issues_by_query(
-                query=f"repo:{self.config.project_owner}/{self.config.repository_name} is:open "
-                      f"{issue_filter} -project:{self.config.project_owner}/"
-                      f"{self.config.repository_name}/{self.config.project_number}"
-            )
-            issues.extend(response.get('search', {}).get('edges', []))
+        response = self.client.get_github_issues(owner=self.config.project_owner,
+                                                 name=self.config.repository_name,
+                                                 labels=self.config.filter_labels,
+                                                 milestone=self.config.filter_milestone,
+                                                 after=None)
+        issues = response.get('repository', {}).get('issues', {})
 
-            while response.get('search', {}).get('pageInfo').get('hasNextPage'):
-                after = response.get('search', {}).get('pageInfo').get('endCursor')
-                response = self.client.search_issues_by_query(
-                    query=f"repo:{self.config.project_owner}/{self.config.repository_name} is:open "
-                          f"{issue_filter} -project:{self.config.project_owner}/"
-                          f"{self.config.repository_name}/{self.config.project_number}",
-                    start_cursor=after
-                )
-                issues.extend(response.get('search', {}).get('edges', []))
+        while response.get('repository', {}).get('issues', {}).get('pageInfo').get('hasNextPage'):
+            after = response.get('repository', {}).get('issues', {}).get('pageInfo').get('endCursor')
+            response = self.client.get_github_issues(owner=self.config.project_owner,
+                                                     name=self.config.repository_name,
+                                                     after=after,
+                                                     labels=self.config.filter_labels,
+                                                     milestone=self.config.filter_milestone)
+            issues.get('edges').extend(response.get('repository', {}).get('issues', {}).get('edges'))
 
         return self.construct_issue_object(issues)
 
@@ -120,4 +83,4 @@ class ProjectManager(object):
             self.project.sort_issues_in_columns(self.client, self.config)
 
         if self.config.move:
-            self.project.move_issues(self.client, self.config)
+            self.project.move_issues(self.client, self.config, self.matching_issues)

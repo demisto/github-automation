@@ -1,5 +1,7 @@
 import json
 import os
+import sys
+from io import StringIO
 from copy import deepcopy
 
 from github_automation.core.issue.issue import Issue
@@ -21,28 +23,20 @@ def test_loading_event_manager():
             "nodes": [
                 {
                     "id": "id=",
+                    "column": {
+                        "name": "testing"
+                    },
                     "project": {
-                        "number": 1,
-                        "columns": {
-                            "nodes": [
-                                {
-                                    "name": "testing"
-                                }
-                            ]
-                        }
+                        "number": 1
                     }
                 },
                 {
                     "id": "id2=",
+                    "column": {
+                        "name": "Queue"
+                    },
                     "project": {
-                        "number": 2,
-                        "columns": {
-                            "nodes": [
-                                {
-                                    "name": "Queue"
-                                }
-                            ]
-                        }
+                        "number": 2
                     }
                 }
             ]
@@ -619,3 +613,205 @@ def test_event_manager_flow(mocker):
                            event=json.dumps({"text": "text"}))
     manager.run()
     assert len(project_object.get_all_issue_ids()) == 1
+
+
+def test_loading_event_manager_without_an_issue():
+    event = {
+        "action": "some action",
+        "pull_request": {
+            "number": 1
+        }
+    }
+
+    class mock_client(object):
+        def get_issue(*args, **kwargs):
+            return
+
+    client = mock_client()
+    manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(event))
+
+    issue_object = manager.get_issue_object()
+    assert issue_object is None
+    assert manager.run() is None
+
+
+def test_loading_event_manager_with_closed_issue():
+
+    issue_id = "=asdf=sdf="
+    title = "issue name"
+    labels = ["HighEffort", "Low", "bug", "test"]
+    assignee = "ronykoz"
+    issue = {
+        "projectCards": {
+            "nodes": [
+                {
+                    "id": "id=",
+                    "column": {
+                        "name": "testing"
+                    },
+                    "project": {
+                        "number": 1
+                    }
+                },
+                {
+                    "id": "id2=",
+                    "column": {
+                        "name": "Queue"
+                    },
+                    "project": {
+                        "number": 2
+                    }
+                }
+            ]
+        },
+        "comments": {
+            "nodes": [
+                {
+                    "author": {
+                        "login": "ronykoz"
+                    },
+                    "body": "comment 1",
+                    "createdAt": "2019-03-19T12:24:27Z"
+                },
+                {
+                    "author": {
+                        "login": "ronykoz"
+                    },
+                    "body": "second comment",
+                    "createdAt": "2019-03-19T12:27:53Z"
+                },
+                {
+                    "author": {
+                        "login": "ronykoz"
+                    },
+                    "body": "third comment",
+                    "createdAt": "2019-03-19T12:52:08Z"
+                }
+            ]
+        },
+        "timelineItems": {
+            "__typename": "IssueTimelineItemsConnection",
+            "nodes": [
+                {
+                    "__typename": "LabeledEvent",
+                    "label": {
+                        "name": labels[0]
+                    },
+                    "createdAt": "2019-03-15T12:40:22Z"
+                },
+                {
+                    "__typename": "LabeledEvent",
+                    "label": {
+                        "name": labels[1]
+                    },
+                    "createdAt": "2019-03-17T13:59:27Z"
+                },
+                {
+                    "__typename": "LabeledEvent",
+                    "label": {
+                        "name": labels[2]
+                    },
+                    "createdAt": "2019-04-08T10:48:02Z"
+                },
+                {
+                    "willCloseTarget": True,
+                    "source": {
+                        "__typename": "PullRequest",
+                        "state": "OPEN",
+                        "isDraft": False,
+                        "assignees": {
+                            "nodes": [
+                                {
+                                    "login": "test"
+                                },
+                                {
+                                    "login": "test2"
+                                }
+                            ]
+                        },
+                        "labels": {
+                            "nodes": [
+                                {
+                                    "name": "label"
+                                }
+                            ]
+                        },
+                        "reviewRequests": {
+                            "totalCount": 0
+                        },
+                        "reviews": {
+                            "totalCount": 3
+                        },
+                        "number": 1,
+                        "reviewDecision": "APPROVED"
+                    }
+                }
+            ]
+        },
+        "title": title,
+        "id": issue_id,
+        "state": "closed",
+        "number": 1,
+        "milestone": {
+            "title": "test"
+        },
+        "labels": {
+            "edges": [
+                {
+                    "node": {
+                        "name": labels[0]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[1]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[2]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[3]
+                    }
+                }
+            ]
+        },
+        "assignees": {
+            "edges": [
+                {
+                    "node": {
+                        "login": assignee
+                    }
+                }
+            ]
+        }
+    }
+
+    event = {
+        "action": "some action",
+        "issue": {
+            "number": 1
+        }
+    }
+
+    class mock_client(object):
+        def get_issue(*args, **kwargs):
+            return {
+                "repository": {
+                    "issue": issue
+                }
+            }
+
+    client = mock_client()
+    saved_stdout = sys.stdout
+    manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(event))
+
+    out = StringIO()
+    sys.stdout = out
+
+    assert manager.run() is None
+    assert 'The issue is closed' in out.getvalue()
+    sys.stdout = saved_stdout

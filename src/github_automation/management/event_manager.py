@@ -32,7 +32,11 @@ class EventManager(object):
 
     @staticmethod
     def get_issue_number(event):
-        return event['issue']['number']
+        if 'issue' in event:
+            return event['issue']['number']
+        else:
+            print("This is not an issue, and we still do not support other github entities in the project.")
+            return
 
     def get_prev_column_cursor(self, column_name):
         layout = self.client.get_project_layout(owner=self.config.project_owner,
@@ -61,8 +65,7 @@ class EventManager(object):
     def manage_issue_in_project(self, issue):
         if (self.config.remove and self.config.project_number in issue.get_associated_project()
                 and not is_matching_issue(issue.labels,
-                                          self.config.must_have_labels,
-                                          self.config.cant_have_labels,
+                                          self.config.must_have_labels, self.config.cant_have_labels,
                                           self.config.filter_labels)):
 
             card_id = [_id for _id, value in issue.card_id_project.items()
@@ -81,6 +84,7 @@ class EventManager(object):
                               if value['project_number'] == self.config.project_number][0]
         if (self.config.add and not column_name_before) or \
                 (self.config.move and matching_column_name != column_name_before):
+            print(f'Moving {issue.title} from {column_name_before}')
             project = self.load_project_column(matching_column_name)
             project.move_issue(self.client, issue, matching_column_name, self.config)
             return
@@ -93,6 +97,9 @@ class EventManager(object):
 
     def get_issue_object(self):
         issue_number = self.get_issue_number(self.event)
+        if issue_number is None:
+            return   # In case the event is not for an issue
+
         issue_response = self.client.get_issue(
             self.project_owner, self.repository_name, issue_number)  # need to address the remove here
         issue = Issue(**parse_issue(issue_response['repository']['issue']))
@@ -100,6 +107,12 @@ class EventManager(object):
 
     def run(self):
         issue = self.get_issue_object()
+        if issue is None:
+            return  # In case the event is not for an issue
+
+        if issue.state == 'closed':
+            print("The issue is closed, not taking an action.")
+            return
 
         for conf_path in self.conf_paths:
             self.config = Configuration(conf_path, self.verbose, self.quiet, self.log_path)

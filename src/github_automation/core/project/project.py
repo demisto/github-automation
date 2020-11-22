@@ -73,6 +73,7 @@ class ProjectColumn(object):
                 exception_msg = str(ex)
                 if 'The card must not be archived' in exception_msg:
                     try:
+                        self.config.logger.info(f"Un-archiving the card of {new_issue.title}")
                         client.un_archive_card(card_id)
                         client.add_to_column(card_id=card_id,
                                              column_id=self.id)
@@ -99,6 +100,7 @@ class ProjectColumn(object):
             exception_msg = str(ex)
             if 'The card must not be archived' in exception_msg:
                 try:
+                    self.config.logger.info(f"Un-archiving the card of {new_issue.title}")
                     client.un_archive_card(card_id)
                     client.move_to_specific_place_in_column(card_id=card_id,
                                                             column_id=self.id,
@@ -281,21 +283,23 @@ class Project(object):
 
         return None, None
 
-    def move_issues(self, client, config: Configuration):
+    def move_issues(self, client, config: Configuration, all_issues):
         # todo: add explanation that we are relying on the github automation to move closed issues to the Done queue
-        for column in self.columns.values():
-            issues = column.get_issues()
-            for issue in issues:
-                column_name_before, card_id = self.get_current_location(issue.id)
-                column_name_after = self.get_matching_column(issue, config)
-                column_id = self.columns[column_name_after].id if column_name_after else ''
-                if not column_id or column_name_before == column_name_after:
-                    continue
+        for issue in all_issues.values():
+            column_name_before, card_id = self.get_current_location(issue.id)
+            column_name_after = self.get_matching_column(issue, config)
+            column_id = self.columns[column_name_after].id if column_name_after else ''
+            if not column_id or column_name_before == column_name_after or issue.state == 'closed':
+                continue
 
-                self.move_issue(client, issue, column_name_after, config)
-                self.columns[column_name_before].remove_card(card_id)
+            self.move_issue(client, issue, column_name_after, config)
+            self.columns[column_name_before].remove_card(card_id)
 
     def move_issue(self, client, issue, column_name, config: Configuration):
+        if issue.state == 'closed':
+            config.logger.debug(f'skipping {issue.title} because the issue is closed')
+            return
+
         card_id = [_id for _id, value in issue.card_id_project.items()
                    if value['project_number'] == config.project_number][0]
 
