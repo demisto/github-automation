@@ -219,6 +219,8 @@ def test_issue_params():
     assert issue.id == issue_id
     assert issue.title == title
     assert issue.number == 1
+    assert 'project_column' in issue.card_id_project['id=']
+    assert issue.card_id_project['id=']['project_column'] == 'testing'
     assert sorted(issue.labels) == sorted(labels)
     assert issue.priority_rank == 1
     assert issue.milestone == "test"
