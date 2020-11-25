@@ -750,7 +750,7 @@ def test_loading_event_manager_with_closed_issue():
         },
         "title": title,
         "id": issue_id,
-        "state": "closed",
+        "state": "CLOSED",
         "number": 1,
         "milestone": {
             "title": "test"
