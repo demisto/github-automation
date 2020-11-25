@@ -110,7 +110,7 @@ class EventManager(object):
         if issue is None:
             return  # In case the event is not for an issue
 
-        if issue.state == 'closed':
+        if issue.state == 'CLOSED':
             print("The issue is closed, not taking an action.")
             return
 
