@@ -4,8 +4,8 @@ import os
 
 import pytest
 from github_automation.common.constants import DEFAULT_PRIORITY_LIST
-from github_automation.core.issue.issue import Issue
-from github_automation.core.project.project import (IssueCard, Project,
+from github_automation.core.project_item.issue.issue import Issue
+from github_automation.core.project.project import (ItemCard, Project,
                                                     ProjectColumn,
                                                     _extract_card_node_data,
                                                     parse_project)
@@ -114,19 +114,19 @@ def test_project():
         }
     }, Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))))
 
-    assert len(project.get_all_issue_ids()) == 2
+    assert len(project.get_all_item_ids()) == 2
     assert len(project.columns.keys()) == 2
 
     assert project.columns['Queue'].name == 'Queue'
-    assert project.columns['Queue'].cards[0].issue_title == 'issue 1'
+    assert project.columns['Queue'].cards[0].item_title == 'issue 1'
 
     assert project.columns['Review in progress'].name == 'Review in progress'
-    assert project.columns['Review in progress'].cards[0].issue_title == 'issue 2'
+    assert project.columns['Review in progress'].cards[0].item_title == 'issue 2'
 
 
 def test_empty_config_for_issue_card():
     with pytest.raises(Exception) as raised_exception:
-        IssueCard("test id")
+        ItemCard("test id")
         assert "You must provide configuration file loading new issue" in raised_exception
 
 
@@ -142,7 +142,7 @@ def test_set_issue_to_issue_card():
         labels=labels,
         assignees=[assignee]
     )
-    card = IssueCard("id", issue=issue)
+    card = ItemCard("id", issue=issue)
     assert card.id == 'id'
     assert card.issue == issue
 
@@ -153,15 +153,15 @@ def test_project_empty_card():
         config=Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini')),
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
-                                   cards=[IssueCard(id="sdf",
-                                                    issue=Issue(id="sdf", title="title", number=1))]),
+                                   cards=[ItemCard(id="sdf",
+                                                   issue=Issue(id="sdf", title="title", number=1))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
     )
 
     assert project.name == "test project"
-    assert len(project.get_all_issue_ids()) == 1
+    assert len(project.get_all_item_ids()) == 1
     assert len(project.columns.keys()) == 2
 
     assert project.columns['Queue'].name == 'Queue'
@@ -176,10 +176,10 @@ def test_add_card_to_column():
     config.priority_list = DEFAULT_PRIORITY_LIST
     column_object = ProjectColumn(id="id", name="Review in progress",
                                   cards=[
-                                      IssueCard(id="sdf",
-                                                issue=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
-                                      IssueCard(id="sdf2",
-                                                issue=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
+                                      ItemCard(id="sdf",
+                                               issue=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
+                                      ItemCard(id="sdf2",
+                                               issue=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
                                   ])
     issue_to_inject = Issue(
         id="4",
@@ -261,12 +261,12 @@ def test_sort_column():
     column_object = ProjectColumn(
         id="id", name="Review in progress",
         cards=[
-            IssueCard(id="sdf",
-                      issue=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
-            IssueCard(id="sdf3",
-                      issue=Issue(id="sdf", title="issue 4", number=4, labels=["Medium"])),
-            IssueCard(id="sdf2",
-                      issue=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
+            ItemCard(id="sdf",
+                     issue=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
+            ItemCard(id="sdf3",
+                     issue=Issue(id="sdf", title="issue 4", number=4, labels=["Medium"])),
+            ItemCard(id="sdf2",
+                     issue=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
         ])
 
     column_object.sort_cards(mock_client, config)
@@ -351,14 +351,14 @@ def test_missing_issues():
         config=config,
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
-                                   cards=[IssueCard(id="sdf",
-                                                    issue=Issue(id="sdf", title="title", number=1))]),
+                                   cards=[ItemCard(id="sdf",
+                                                   issue=Issue(id="sdf", title="title", number=1))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
     )
 
-    assert len(project.get_all_issue_ids()) == 1
+    assert len(project.get_all_item_ids()) == 1
     assert len(project.columns.keys()) == 2
 
     issue = Issue(
@@ -369,7 +369,7 @@ def test_missing_issues():
     issues = {
         "2": issue
     }
-    assert project.find_missing_issue_ids(issues) == {"2"}
+    assert project.find_missing_item_ids(issues) == {"2"}
 
 
 def test_removing_issues():
@@ -380,22 +380,22 @@ def test_removing_issues():
         config=config,
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
-                                   cards=[IssueCard(id="sdf",
-                                                    issue=Issue(id="sdf", title="title", number=1))]),
+                                   cards=[ItemCard(id="sdf",
+                                                   issue=Issue(id="sdf", title="title", number=1))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
     )
 
-    assert len(project.get_all_issue_ids()) == 1
+    assert len(project.get_all_item_ids()) == 1
     assert len(project.columns.keys()) == 2
 
     class ClientMock(object):
         def delete_project_card(self, **kwargs):
             return
 
-    project.remove_issues(ClientMock, config)
-    assert project.get_all_issue_ids() == set()
+    project.remove_items(ClientMock, config)
+    assert project.get_all_item_ids() == set()
 
 
 def test_adding_issue():
@@ -406,14 +406,14 @@ def test_adding_issue():
         config=config,
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
-                                   cards=[IssueCard(id="sdf",
-                                                    issue=Issue(id="sdf", title="title", number=2))]),
+                                   cards=[ItemCard(id="sdf",
+                                                   issue=Issue(id="sdf", title="title", number=2))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
     )
 
-    assert len(project.get_all_issue_ids()) == 1
+    assert len(project.get_all_item_ids()) == 1
     assert len(project.columns.keys()) == 2
 
     issue = Issue(
@@ -444,12 +444,12 @@ def test_adding_issue():
         def move_to_specific_place_in_column(*args, **kwargs):
             return
 
-    project.add_issues(ClientMock, issues, {"1"}, config)
+    project.add_items(ClientMock, issues, {"1"}, config)
     assert project.columns['Queue'].cards[0].issue.title == "Rony"
 
     # testing non existent column
     with pytest.raises(Exception) as err:
-        project.add_issue(ClientMock, issue, "non existent", config)
+        project.add_item(ClientMock, issue, "non existent", config)
         assert "Did not found a matching column" in err
 
     issue2 = Issue(
@@ -465,7 +465,7 @@ def test_adding_issue():
     issues2 = {
         "2": issue2
     }
-    project.add_issues(ClientMock, issues2, {"2"}, config)
+    project.add_items(ClientMock, issues2, {"2"}, config)
     assert project.columns['Queue'].cards[0].issue.title == "Rony"
 
 
@@ -503,8 +503,8 @@ def test_move_issues():
         config=config,
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
-                                   cards=[IssueCard(id="sdf",
-                                                    issue=issue)]),
+                                   cards=[ItemCard(id="sdf",
+                                                   issue=issue)]),
             "In progress": ProjectColumn(id="id", name="In progress", cards=[])
         }
     )
@@ -516,15 +516,15 @@ def test_move_issues():
         def move_to_specific_place_in_column(*args, **kwargs):
             return
 
-    project.move_issues(MockClient(), config, {'1': issue})
+    project.move_items(MockClient(), config, {'1': issue})
     assert project.is_in_column("Queue", "1") is False
     assert project.is_in_column("In progress", "1") is True
 
     # Move within the same column
-    project.move_issues(MockClient(), config, {'1': issue})
+    project.move_items(MockClient(), config, {'1': issue})
     assert project.is_in_column("Queue", "1") is False
     assert project.is_in_column("In progress", "1") is True
 
     issue.state = 'closed'
-    project.move_issue(MockClient(), issue, 'In progress', config)
+    project.move_item(MockClient(), issue, 'In progress', config)
     assert project.is_in_column("In progress", "1") is True

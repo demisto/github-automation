@@ -1,3 +1,4 @@
+import enum
 import logging
 import os
 from configparser import ConfigParser
@@ -18,7 +19,7 @@ class Configuration(object):
         'issue.labels',
         'issue.pull_request.assignees',
         'issue.pull_request.labels'
-    ]
+    ]   # TODO: Add pull requests
     PERMITTED_QUERIES = [
         'issue.assignees',
         'issue.pull_request',
@@ -28,6 +29,7 @@ class Configuration(object):
         'issue.pull_request.assignees',
         'issue.pull_request.labels'
     ]  # TODO: load this list dynamically from the project
+    # TODO: Add pull requests
     GENERAL_SECTIONS = [
         'General',
         'Actions'
@@ -43,12 +45,16 @@ class Configuration(object):
                          'General section, or miss-spelled. The section name is {}'
     ILLEGAL_QUERY = "You have entered an illegal query - {}, the possible options are:\n" + '\n'.join(PERMITTED_QUERIES)
 
+    class RunMode(enum.Enum):
+        Issues = "issues"
+        PullRequests = "pull_requests"
+
     def __init__(self, conf_file_path, verbose=2, quiet=False, log_path=''):
         self.config = ConfigParser(allow_no_value=True)
         self.config.read(conf_file_path)
 
         # General
-        self.closed_issues_column = ''
+        self.closed_item_column = ''
         self.project_owner = ''
         self.repository_name = ''
         self.project_number = None
@@ -59,6 +65,7 @@ class Configuration(object):
         self.cant_have_labels = []
         self.column_names = []
         self.column_rule_desc_order = []
+        self.run_mode = self.RunMode.Issues  # TODO: Finish impl. Add documentation for [General] run_mode = pull_requests
 
         # Actions
         self.remove = False

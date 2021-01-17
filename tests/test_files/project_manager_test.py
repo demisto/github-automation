@@ -386,7 +386,7 @@ def test_loading():
     assert manager.project.is_in_column("In progress", "56567=") is True
     assert manager.project.is_in_column("In progress", "Random text") is False
 
-    manager.project.sort_issues_in_columns(client, config)
+    manager.project.sort_items_in_columns(client, config)
     issues = [card.issue.title for card in manager.project.columns['In progress'].cards]
     assert issues == ['issue 3', 'issue 2']
 

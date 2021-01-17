@@ -13,7 +13,7 @@ def test_loading_configuration():
     assert 'General' in configuration.config.sections()
     configuration.load_properties()
 
-    assert configuration.closed_issues_column == 'Done'
+    assert configuration.closed_item_column == 'Done'
     assert configuration.project_owner == 'ronykoz'
     assert configuration.repository_name == 'test'
     assert configuration.project_number == 1

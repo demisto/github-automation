@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from github_automation.core.issue.pull_request import (PullRequest,
-                                                       parse_pull_request)
+from github_automation.core.project_item.pull_request import (PullRequest,
+                                                              parse_pull_request)
 
 
 def test_parse_pull_request():

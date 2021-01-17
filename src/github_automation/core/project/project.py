@@ -1,11 +1,12 @@
 from __future__ import absolute_import
 
 from copy import deepcopy
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from github_automation.common.constants import OR
-from github_automation.common.utils import is_matching_issue
-from github_automation.core.issue.issue import Issue, parse_issue
+from github_automation.common.utils import is_matching_project_item
+from github_automation.core.project_item.issue.issue import Issue, parse_issue
+from github_automation.core.project_item.pull_request.pull_request import PullRequest, parse_pull_request
 from github_automation.management.configuration import Configuration
 
 
@@ -13,19 +14,50 @@ def parse_issue_card(card_edge: dict, config: Configuration):
     return {
         "id": card_edge.get('node', {}).get('id'),
         "cursor": card_edge['cursor'],
-        "issue": Issue(**parse_issue(card_edge.get('node', {}).get('content')),
-                       priority_list=config.priority_list)
+        "item": Issue(**parse_issue(card_edge.get('node', {}).get('content')),
+                      priority_list=config.priority_list)
     }
 
 
-class IssueCard(object):
-    def __init__(self, id: str, issue: Issue = None, cursor: str = ''):
+def parse_pull_request_card(card_edge: dict, config: Configuration):
+    return {
+        "id": card_edge.get('node', {}).get('id'),
+        "cursor": card_edge['cursor'],
+        "item": PullRequest(**parse_pull_request(card_edge.get('node', {}).get('content')),
+                            priority_list=config.priority_list)
+    }
+
+
+def parse_item_card(card_edge: dict, config: Configuration):
+    # if issue
+    return parse_issue_card(card_edge, config)
+    # else pull request
+    # return parse_pull_request_card(card_edge, config)
+    # TODO: Finish impl. determine how to figure out if it's an issue or pull request
+
+
+class ItemCard(object):
+    def __init__(self, id: str, item: Union[Issue, PullRequest] = None, cursor: str = ''):
+
         self.id = id
         self.cursor = cursor
-        self.issue = issue
+        self.issue = item if isinstance(item, Issue) else None
+        self.pull_request = item if isinstance(item, PullRequest) else None
 
-        self.issue_id = self.issue.id  # todo remove this
-        self.issue_title = self.issue.title  # todo remove this
+        self.item_id = self.issue.id if self.issue else self.pull_request.id
+        self.item_title = self.issue.title if self.issue else self.pull_request.id
+
+    def get_labels(self):
+        if self.issue:
+            return self.issue.labels
+        elif self.pull_request:
+            return self.pull_request.labels
+
+    def get_item(self):
+        if self.issue:
+            return self.issue
+        else:
+            return self.pull_request
 
 
 def _extract_card_node_data(column_node: dict, config: Configuration):
@@ -34,8 +66,7 @@ def _extract_card_node_data(column_node: dict, config: Configuration):
         card_content = card.get('node', {}).get('content')
         if not card_content:
             continue
-
-        cards.append(IssueCard(**parse_issue_card(card, config)))
+        cards.append(ItemCard(**parse_item_card(card, config)))
 
     return cards
 
@@ -50,22 +81,20 @@ def parse_project_column(column_node: dict, config: Configuration):
 
 
 class ProjectColumn(object):
-    def __init__(self, id: str, name: str, cards: List[IssueCard], config: Configuration = None):
+    def __init__(self, id: str, name: str, cards: List[ItemCard], config: Configuration = None):
         self.id = id
         self.name = name
         self.cards = cards
         self.config = config
 
-    def get_all_issue_ids(self):
-        return {card.issue.id for card in self.cards}
+    def get_all_item_ids(self):
+        return {card.item_id for card in self.cards}
 
-    def get_issues(self):
-        return [card.issue for card in self.cards]
-
-    def add_card(self, card_id, new_issue, client):
+    def add_card(self, card_id, client, new_item):
         insert_after_position = len(self.cards) - 1  # In case it should be the lowest issue
-        if not self.cards or new_issue > self.cards[0].issue:
-            self.cards.insert(0, IssueCard(id=card_id, issue=new_issue))
+        new_items_flag = new_item > self.cards[0].get_item()
+        if not self.cards or new_items_flag:
+            self.cards.insert(0, ItemCard(id=card_id, item=new_item))
             try:
                 client.add_to_column(card_id=card_id,
                                      column_id=self.id)
@@ -73,7 +102,7 @@ class ProjectColumn(object):
                 exception_msg = str(ex)
                 if 'The card must not be archived' in exception_msg:
                     try:
-                        self.config.logger.info(f"Un-archiving the card of {new_issue.title}")
+                        self.config.logger.info(f"Un-archiving the card of {new_item.title}")
                         client.un_archive_card(card_id)
                         client.add_to_column(card_id=card_id,
                                              column_id=self.id)
@@ -81,17 +110,17 @@ class ProjectColumn(object):
                     except Exception as ex:
                         exception_msg += '\n' + str(ex)
 
-                self.config.logger.warning(f'The issue {new_issue.title} was not added due to {exception_msg}')
+                self.config.logger.warning(f'The item {new_item.title} was not added due to {exception_msg}')
 
             return
 
         for i in range(len(self.cards) - 1):
-            if self.cards[i].issue > new_issue > self.cards[i + 1].issue:
+            if self.cards[i].get_item() > new_item > self.cards[i + 1].get_item():
                 insert_after_position = i
                 break
 
         self.cards.insert(insert_after_position + 1,
-                          IssueCard(id=card_id, issue=new_issue))
+                          ItemCard(id=card_id, item=new_item))
         try:
             client.move_to_specific_place_in_column(card_id=card_id,
                                                     column_id=self.id,
@@ -100,7 +129,7 @@ class ProjectColumn(object):
             exception_msg = str(ex)
             if 'The card must not be archived' in exception_msg:
                 try:
-                    self.config.logger.info(f"Un-archiving the card of {new_issue.title}")
+                    self.config.logger.info(f"Un-archiving the card of {new_item.title}")
                     client.un_archive_card(card_id)
                     client.move_to_specific_place_in_column(card_id=card_id,
                                                             column_id=self.id,
@@ -109,11 +138,11 @@ class ProjectColumn(object):
                 except Exception as ex:
                     exception_msg += '\n' + str(ex)
 
-            self.config.logger.warning(f'The issue {new_issue.title} was not added due to {exception_msg}')
+            self.config.logger.warning(f'The item {new_item.title} was not added due to {exception_msg}')
 
-    def get_card_id(self, issue_id):
+    def get_card_id(self, item_id):
         for card in self.cards:
-            if card.issue_id == issue_id:
+            if card.item_id == item_id:
                 return card.id
 
     def remove_card(self, card_id):
@@ -135,24 +164,24 @@ class ProjectColumn(object):
         self.cards.insert(new_index, deepcopy(old_card))
 
     def sort_cards(self, client, config):
-        sorted_cards = deepcopy(sorted(self.cards, key=lambda card: card.issue, reverse=True))
+        sorted_cards = deepcopy(sorted(self.cards, key=lambda card: card.get_item(), reverse=True))
         for index, card in enumerate(sorted_cards):
             if card.id != self.cards[index].id:
                 self.move_card_in_list(card.id, index)
-                config.logger.info(f"Moving issue '{card.issue_title}' in column '{self.name}' to position: {index}")
+                config.logger.info(f"Moving item '{card.item_title}' in column '{self.name}' to position: {index}")
                 if index == 0:
                     try:
                         client.add_to_column(card_id=card.id,
                                              column_id=self.id)
                     except Exception as ex:
-                        config.logger.warning(f'The issue {card.issue_title} was not moved due to {str(ex)}')
+                        config.logger.warning(f'The item {card.item_title} was not moved due to {str(ex)}')
                 else:
                     try:
                         client.move_to_specific_place_in_column(card_id=card.id,
                                                                 column_id=self.id,
                                                                 after_card_id=sorted_cards[index-1].id)
                     except Exception as ex:
-                        config.logger.warning(f'The issue {card.issue_title} was not moved due to {str(ex)}')
+                        config.logger.warning(f'The item {card.item_title} was not moved due to {str(ex)}')
 
         self.cards = sorted_cards
 
@@ -185,7 +214,7 @@ class Project(object):
         self.config = config
 
     @staticmethod
-    def get_matching_column(issue, config: Configuration):
+    def get_matching_column(item, config: Configuration):
         column_name = ''
         for tested_column_name in config.column_rule_desc_order:
             conditions = config.column_to_rules[tested_column_name]
@@ -222,118 +251,120 @@ class Project(object):
                 column_name = tested_column_name
                 break
 
-            config.logger.debug(f'{issue.title} did not match the filters of the column - \'{tested_column_name}\'')
+            config.logger.debug(f'{item.title} did not match the filters of the column - \'{tested_column_name}\'')
 
         return column_name
 
-    def get_all_issue_ids(self):
-        all_issues = set()
+    def get_all_item_ids(self):
+        all_items = set()
         for column in self.columns.values():
-            all_issues = all_issues.union(column.get_all_issue_ids())
+            all_items = all_items.union(column.get_all_item_ids())
 
-        return all_issues
+        return all_items
 
-    def find_missing_issue_ids(self, issues):
-        issues_in_project_keys = set(self.get_all_issue_ids())
-        all_matching_issues = set()
-        for issue in issues.values():
-            if not any(self.number == value.get('project_number') for value in issue.card_id_project.values()):
-                all_matching_issues.add(issue.id)
+    def find_missing_item_ids(self, items):
+        items_in_project_keys = set(self.get_all_item_ids())
+        all_matching_items = set()
+        for item in items.values():
+            if not any(self.number == value.get('project_number') for value in item.card_id_project.values()):
+                all_matching_items.add(item.id)
 
-        return all_matching_issues - issues_in_project_keys
+        return all_matching_items - items_in_project_keys
 
-    def add_issues(self, client, issues, issues_to_add, config: Configuration):
-        for issue_id in issues_to_add:
-            column_name = self.get_matching_column(issues[issue_id], config)
-            self.add_issue(client, issues[issue_id], column_name, config)
+    def add_items(self, client, items, items_to_add, config: Configuration):
+        for item_id in items_to_add:
+            column_name = self.get_matching_column(items[item_id], config)
+            self.add_item(client, items[item_id], column_name, config)
 
-    def add_issue(self, client, issue, column_name, config):
+    def add_item(self, client, item, column_name, config):
+        item_type = "issue" if isinstance(item, Issue) else "pull request"
         if column_name not in config.column_names:
-            config.logger.warning(f"Did not found a matching column for your issue, please check your configuration "
-                                  f"file. The issue was {issue.title}")
+            config.logger.warning(f"Did not found a matching column for your {item_type}, please check your configuration "
+                                  f"file. The {item_type} was {item.title}")
             return
 
         column_id = self.columns[column_name].id if column_name else ''
-        config.logger.info("Adding issue '{}' to column '{}'".format(issue.title, column_name))
-        if config.project_number not in issue.get_associated_project():
+        config.logger.info(f"Adding {item_type} '{item.title}' to column '{column_name}'")
+        if config.project_number not in item.get_associated_project():
             try:
-                response = client.add_issues_to_project(issue.id, column_id)
+                response = client.add_items_to_project(item.id, column_id)
                 card_id = response['addProjectCard']['cardEdge']['node']['id']
             except Exception as ex:
-                config.logger.warning(f'The issue {issue.title} was not added due to {str(ex)}')
+                config.logger.warning(f'The {item_type} {item.title} was not added due to {str(ex)}')
                 return
         else:
-            card_id = issue.get_card_id_from_project(config.project_number)
+            card_id = item.get_card_id_from_project(config.project_number)
 
         self.columns[column_name].add_card(card_id=card_id,
-                                           new_issue=issue,
+                                           new_item=item,
                                            client=client)
 
-    def is_in_column(self, column_name, issue_id):
-        if issue_id in self.columns[column_name].get_all_issue_ids():
+    def is_in_column(self, column_name, item_id):
+        if item_id in self.columns[column_name].get_all_item_ids():
             return True
 
         return False
 
-    def get_current_location(self, issue_id):
+    def get_current_location(self, item_id):
         for column_name, column in self.columns.items():
-            card_id = column.get_card_id(issue_id)
+            card_id = column.get_card_id(item_id)
             if card_id:
                 return column_name, card_id
 
         return None, None
 
-    def move_issues(self, client, config: Configuration, all_issues):
+    def move_items(self, client, config: Configuration, all_items):
         # todo: add explanation that we are relying on the github automation to move closed issues to the Done queue
-        for issue in all_issues.values():
-            column_name_before, card_id = self.get_current_location(issue.id)
-            column_name_after = self.get_matching_column(issue, config)
+        for item in all_items.values():
+            column_name_before, card_id = self.get_current_location(item.id)
+            column_name_after = self.get_matching_column(item, config)
             column_id = self.columns[column_name_after].id if column_name_after else ''
-            if not column_id or column_name_before == column_name_after or issue.state == 'closed':
+            if not column_id or column_name_before == column_name_after or item.state == 'closed':
                 continue
 
-            self.move_issue(client, issue, column_name_after, config)
+            self.move_item(client, item, column_name_after, config)
             self.columns[column_name_before].remove_card(card_id)
 
-    def move_issue(self, client, issue, column_name, config: Configuration):
-        if issue.state == 'closed':
-            config.logger.debug(f'skipping {issue.title} because the issue is closed')
+    def move_item(self, client, item, column_name, config: Configuration):
+        item_type = 'issue' if isinstance(item, Issue) else "pull request"
+        if item.state == 'closed':
+            config.logger.debug(f'skipping {item.title} because the {item_type} is closed')
             return
 
-        card_id = [_id for _id, value in issue.card_id_project.items()
+        card_id = [_id for _id, value in item.card_id_project.items()
                    if value['project_number'] == config.project_number][0]
 
-        config.logger.info(f"Moving card {issue.title} to '{column_name}'")
+        config.logger.info(f"Moving card {item.title} to '{column_name}'")
         self.columns[column_name].add_card(card_id=card_id,
-                                           new_issue=issue,
+                                           new_item=item,
                                            client=client)
 
-    def remove_issues(self, client, config: Configuration):
+    def remove_items(self, client, config: Configuration):
         for column in self.columns.values():
-            if column.name == config.closed_issues_column:  # Not going over closed issues
+            if column.name == config.closed_item_column:  # Not going over closed issues
                 continue
 
             indexes_to_delete = []
             for index, card in enumerate(column.cards):
-                if not is_matching_issue(card.issue.labels, config.must_have_labels,
-                                         config.cant_have_labels, config.filter_labels):
+                if not is_matching_project_item(card.get_labels(), config.must_have_labels,
+                                                config.cant_have_labels, config.filter_labels):
                     indexes_to_delete.append(index)
-                    self.remove_issue(client, card.issue_title, card.id, config)
+                    self.remove_item(client, card.item_title, card.id, config)
 
             for index_to_delete in sorted(indexes_to_delete, reverse=True):  # Removing from bottom to top
                 del column.cards[index_to_delete]
 
     @staticmethod
-    def remove_issue(client, issue_title, card_id, config):
+    def remove_item(client, issue_title, card_id, config):
         config.logger.info(f'Removing issue {issue_title} from project')
         try:
             client.delete_project_card(card_id)
         except Exception as ex:
             config.logger.warning(f'The issue {issue_title} was not removed due to {str(ex)}')
 
-    def sort_issues_in_columns(self, client, config):
+    def sort_items_in_columns(self, client, config):
         for column_name, column in self.columns.items():
-            if column.name == config.closed_issues_column:  # Not going over closed issues
+            if column.name == config.closed_item_column:  # Not going over closed issues
                 continue
 
             column.sort_cards(client, config)

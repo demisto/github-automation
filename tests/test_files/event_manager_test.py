@@ -4,7 +4,7 @@ import sys
 from io import StringIO
 from copy import deepcopy
 
-from github_automation.core.issue.issue import Issue
+from github_automation.core.project_item.issue.issue import Issue
 from github_automation.core.project.project import Project, ProjectColumn
 from github_automation.management.configuration import Configuration
 from github_automation.management.event_manager import EventManager
@@ -612,7 +612,7 @@ def test_event_manager_flow(mocker):
     manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client,
                            event=json.dumps({"text": "text"}))
     manager.run()
-    assert len(project_object.get_all_issue_ids()) == 1
+    assert len(project_object.get_all_item_ids()) == 1
 
 
 def test_loading_event_manager_without_an_issue():

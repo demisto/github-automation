@@ -259,7 +259,7 @@ class GraphQLClient(object):
               }
             }''', vars)
 
-    def add_issues_to_project(self, issue_id, column_id):
+    def add_items_to_project(self, issue_id, column_id):
         return self.execute_query('''
         mutation addProjectCardAction($contentID: ID!, $columnId: ID!){
           addProjectCard(input: {contentId: $contentID, projectColumnId: $columnId}) {
@@ -405,7 +405,7 @@ class GraphQLClient(object):
 }
 ''', {"owner": owner, "name": name, "issueNumber": issue_number})
 
-    def get_column_issues(self, owner, name, project_number, prev_column_id, start_cards_cursor=''):
+    def get_column_items(self, owner, name, project_number, prev_column_id, start_cards_cursor=''):
         return self.execute_query('''
         query ($owner: String!, $name: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor:
         String) {
@@ -449,6 +449,25 @@ class GraphQLClient(object):
                       }
                     }
                   }
+                  ... on PullRequest {
+                    id
+                    number
+                    title
+                    labels(first: 10) {
+                      edges {
+                        node {
+                          name
+                        }
+                      }
+                    }
+                    assignees(first: 10) {
+                      edges {
+                        node {
+                          login
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -461,7 +480,7 @@ class GraphQLClient(object):
 ''', {"owner": owner, "name": name, "projectNumber": project_number, "prevColumnID": prev_column_id,
             "start_cards_cursor": start_cards_cursor})
 
-    def get_first_column_issues(self, owner, name, project_number, start_cards_cursor=''):
+    def get_first_column_items(self, owner, name, project_number, start_cards_cursor=''):
         return self.execute_query('''
             query ($owner: String!, $name: String!, $projectNumber: Int!, $start_cards_cursor: String) {
       repository(owner: $owner, name: $name) {
@@ -505,9 +524,33 @@ class GraphQLClient(object):
                         }
                       }
                       ... on PullRequest {
-                        id
-                        number
                         title
+                        id
+                        state
+                        number
+                        mergedAt
+                        merged
+                        reviewDecision
+                        reviews(last: 10) {
+                          totalCount
+                        }
+                        reviewRequests(first: 10) {
+                          totalCount
+                        }
+                        labels(first: 10) {
+                          edges {
+                            node {
+                              name
+                            }
+                          }
+                        }
+                        assignees(first: 10) {
+                          edges {
+                            node {
+                              login
+                            }
+                          }
+                        }
                       }
                     }
                   }
