@@ -65,7 +65,7 @@ class Configuration(object):
         self.cant_have_labels = []
         self.column_names = []
         self.column_rule_desc_order = []
-        self.run_mode = self.RunMode.Issues  # TODO: Finish impl. Add documentation for [General] run_mode = pull_requests
+        self.run_mode = self.RunMode.Issues  # TODO: Finish impl Add documentation [General] run_mode = pull_requests
 
         # Actions
         self.remove = False

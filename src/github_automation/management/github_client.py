@@ -259,6 +259,91 @@ class GraphQLClient(object):
               }
             }''', vars)
 
+    def get_github_pull_requests(self, owner, name, after):
+        vars = {"owner": owner, "name": name, "after": after}
+        if not after:
+            del vars['after']
+
+        return self.execute_query('''
+            query ($after: String!, $owner: String!, $name: String!) {
+              repository(owner: $owner, name: $name) {
+                pullRequests(first: 100, after:$after, states: OPEN) {
+                  pageInfo {
+                    endCursor
+                    hasNextPage
+                  }
+                  edges {
+                    cursor
+                    node {
+                      title
+                      id
+                      state
+                      number
+                      mergedAt
+                      merged
+                      reviewDecision
+                      reviews(last: 10) {
+                        totalCount
+                      }
+                      reviewRequests(first: 10) {
+                        totalCount
+                      }
+                      milestone {
+                        title
+                      }
+                      labels(first: 10) {
+                        edges {
+                          node {
+                            name
+                          }
+                        }
+                      }
+                      assignees(last: 10) {
+                        edges {
+                          node {
+                            id
+                            login
+                          }
+                        }
+                      }
+                      projectCards(first: 5) {
+                        nodes {
+                          id
+                          column {
+                            name
+                          }
+                          project {
+                            number
+                          }
+                        }
+                      }
+                      timelineItems(first: 10, itemTypes: [CROSS_REFERENCED_EVENT, PULL_REQUEST_REVIEW, REVIEW_REQUESTED_EVENT, REVIEW_REQUEST_REMOVED_EVENT, MERGED_EVENT]) {
+                        __typename
+                        ... on PullRequestTimelineItemsConnection {
+                          nodes {
+                            __typename
+                            ... on AssignedEvent {
+                              assignee {
+                                ... on User {
+                                  name
+                                }
+                              }
+                            }
+                            ... on ClosedEvent {
+                              closable {
+                                closed
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            ''', vars)
+
     def add_items_to_project(self, issue_id, column_id):
         return self.execute_query('''
         mutation addProjectCardAction($contentID: ID!, $columnId: ID!){
@@ -430,6 +515,7 @@ class GraphQLClient(object):
                 state
                 id
                 content {
+                  __typename
                   ... on Issue {
                     id
                     number

@@ -14,13 +14,6 @@ def extract_assignees(assignee_edges):
     return assignees
 
 
-def get_milestone(github_issue_object):
-    if 'milestone' in github_issue_object and github_issue_object['milestone']:
-        return github_issue_object['milestone']['title']
-
-    return None
-
-
 def extract_project_cards(project_cards):
     card_id_project = {}
     for node in project_cards.get('nodes', []):
@@ -28,14 +21,27 @@ def extract_project_cards(project_cards):
             "project_number": node['project']['number']
         }
         if 'column' in node and node['column'] and 'name' in node['column']:
+            # TODO: Remove this, it's only used to get previous name of column in events_manager
             card_id_project[node['id']]['project_column'] = node['column']['name']
 
     return card_id_project
 
 
+def is_review_requested(pull_request_source):
+    if pull_request_source['reviewRequests']['totalCount'] or pull_request_source['reviews']['totalCount']:
+        return True
+
+    else:
+        return False
+
+
+def is_review_completed(pull_request_node):
+    return False if pull_request_node["reviewDecision"] != "APPROVED" else True
+
+
 class BaseProjectItem(object):
     def __init__(self, id: str, title: str, number: int, assignees: list = None, labels: list = None,
-                 milestone: str = '', card_id_to_project: dict = None, priority_list: list = None, state: str = ''):
+                 card_id_to_project: dict = None, priority_list: list = None, state: str = ''):
         self.id = id
         self.title = title
         self.number = number
@@ -43,7 +49,6 @@ class BaseProjectItem(object):
 
         self.assignees = assignees if assignees else []
 
-        self.milestone = milestone
         self.labels = labels if labels else []
 
         self.priority_rank = None

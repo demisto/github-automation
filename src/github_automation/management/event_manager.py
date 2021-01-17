@@ -135,8 +135,8 @@ class EventManager(object):
                 self.config.load_properties()
 
                 if (self.config.project_number in issue.get_associated_project() or
-                        is_matching_project_item(issue.labels, self.config.must_have_labels, self.config.cant_have_labels,
-                                                 self.config.filter_labels)):
+                        is_matching_project_item(issue.labels, self.config.must_have_labels,
+                                                 self.config.cant_have_labels, self.config.filter_labels)):
                     issue.set_priority(self.config.priority_list)
                     self.manage_issue_in_project(issue)
 
@@ -144,5 +144,5 @@ class EventManager(object):
                     self.config.logger.debug(f"The issue does not match the filter provided in the configuration "
                                              f"file {conf_path}.")
         else:
-            pull_request = self.get_pull_request_object()  # TODO: Complete this part
+            # pull_request = self.get_pull_request_object()  # TODO: Complete this part
             return  # In case the event is not for an issue / pull request

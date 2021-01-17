@@ -29,11 +29,14 @@ def parse_pull_request_card(card_edge: dict, config: Configuration):
 
 
 def parse_item_card(card_edge: dict, config: Configuration):
-    # if issue
-    return parse_issue_card(card_edge, config)
-    # else pull request
-    # return parse_pull_request_card(card_edge, config)
-    # TODO: Finish impl. determine how to figure out if it's an issue or pull request
+    # __typename PullRequest is expected for PullRequest and Issue for Issue
+    if card_edge.get('__typename') == 'PullRequest':
+        parse_pull_request_card(card_edge, config)
+    elif card_edge.get('__typename') == 'Issue':
+        return parse_issue_card(card_edge, config)
+    else:
+        print("This is not an issue or a pull request, and we still do not support other github "
+              "entities in the project.")
 
 
 class ItemCard(object):

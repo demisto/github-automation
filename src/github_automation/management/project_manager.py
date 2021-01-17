@@ -82,22 +82,17 @@ class ProjectManager(object):
         return self.construct_issue_object(issues)
 
     def get_github_pull_requests(self):
-        #TODO: Finish impl
         response = self.client.get_github_pull_requests(owner=self.config.project_owner,
                                                         name=self.config.repository_name,
-                                                        labels=self.config.filter_labels,
-                                                        milestone=self.config.filter_milestone,
                                                         after=None)
-        pull_requests = response.get('repository', {}).get('pull_requests', {})
+        pull_requests = response.get('repository', {}).get('pullRequests', {})
 
-        while response.get('repository', {}).get('issues', {}).get('pageInfo').get('hasNextPage'):
-            after = response.get('repository', {}).get('issues', {}).get('pageInfo').get('endCursor')
+        while response.get('repository', {}).get('pullRequests', {}).get('pageInfo').get('hasNextPage'):
+            after = response.get('repository', {}).get('pullRequests', {}).get('pageInfo', {}).get('endCursor')
             response = self.client.get_github_pull_requests(owner=self.config.project_owner,
                                                             name=self.config.repository_name,
-                                                            after=after,
-                                                            labels=self.config.filter_labels,
-                                                            milestone=self.config.filter_milestone)
-            pull_requests.get('edges').extend(response.get('repository', {}).get('pull_requests', {}).get('edges'))
+                                                            after=after)
+            pull_requests.get('edges').extend(response.get('repository', {}).get('pullRequests', {}).get('edges'))
 
         return self.construct_pull_request_object(pull_requests)
 
