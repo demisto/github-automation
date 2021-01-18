@@ -288,9 +288,6 @@ class GraphQLClient(object):
                       reviewRequests(first: 10) {
                         totalCount
                       }
-                      milestone {
-                        title
-                      }
                       labels(first: 10) {
                         edges {
                           node {
@@ -314,26 +311,6 @@ class GraphQLClient(object):
                           }
                           project {
                             number
-                          }
-                        }
-                      }
-                      timelineItems(first: 10, itemTypes: [CROSS_REFERENCED_EVENT, PULL_REQUEST_REVIEW, REVIEW_REQUESTED_EVENT, REVIEW_REQUEST_REMOVED_EVENT, MERGED_EVENT]) {
-                        __typename
-                        ... on PullRequestTimelineItemsConnection {
-                          nodes {
-                            __typename
-                            ... on AssignedEvent {
-                              assignee {
-                                ... on User {
-                                  name
-                                }
-                              }
-                            }
-                            ... on ClosedEvent {
-                              closable {
-                                closed
-                              }
-                            }
                           }
                         }
                       }
@@ -489,6 +466,55 @@ class GraphQLClient(object):
   }
 }
 ''', {"owner": owner, "name": name, "issueNumber": issue_number})
+
+    def get_pull_request(self, owner, name, pull_request_number):
+        return self.execute_query('''
+query ($owner: String!, $name: String!, $prNumber: Int!) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $prNumber) {
+      projectCards(first: 5) {
+        nodes {
+          id
+          column {
+            name
+          }
+          project {
+            number
+          }
+        }
+      }
+      title
+      id
+      number
+      state
+      mergedAt
+      merged
+      reviewDecision
+      reviews(last: 10) {
+        totalCount
+      }
+      reviewRequests(first: 10) {
+        totalCount
+      }
+      labels(last: 10) {
+        edges {
+          node {
+            name
+          }
+        }
+      }
+      assignees(last: 10) {
+        edges {
+          node {
+            id
+            login
+          }
+        }
+      }
+    }
+  }
+}
+''', {"owner": owner, "name": name, "issueNumber": pull_request_number})
 
     def get_column_items(self, owner, name, project_number, prev_column_id, start_cards_cursor=''):
         return self.execute_query('''

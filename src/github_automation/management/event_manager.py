@@ -31,22 +31,6 @@ class EventManager(object):
         self.event = json.loads(event)
         self.client = client if client else GraphQLClient(api_key)
 
-    @staticmethod
-    def get_pull_request_number(event):
-        if 'pull_request' in event:
-            return event['pull_request']['number']
-        else:
-            print("This is not a pull request.")
-            return
-
-    @staticmethod
-    def get_issue_number(event):
-        if 'issue' in event:
-            return event['issue']['number']
-        else:
-            print("This is not an issue.")
-            return
-
     def get_prev_column_cursor(self, column_name):
         layout = self.client.get_project_layout(owner=self.config.project_owner,
                                                 repository_name=self.config.repository_name,
@@ -71,31 +55,31 @@ class EventManager(object):
 
         return Project(**parse_project(response.get("repository", {}).get('project', {}), config=self.config))
 
-    def manage_issue_in_project(self, issue):
-        if (self.config.remove and self.config.project_number in issue.get_associated_project()
-                and not is_matching_project_item(issue.labels,
+    def manage_item_in_project(self, item):
+        if (self.config.remove and self.config.project_number in item.get_associated_project()
+                and not is_matching_project_item(item.labels,
                                                  self.config.must_have_labels, self.config.cant_have_labels,
                                                  self.config.filter_labels)):
 
-            card_id = [_id for _id, value in issue.card_id_project.items()
+            card_id = [_id for _id, value in item.card_id_project.items()
                        if value['project_number'] == self.config.project_number][0]
-            Project.remove_item(self.client, issue.title, card_id, self.config)
+            Project.remove_item(self.client, item.title, card_id, self.config)
             return
 
-        matching_column_name = Project.get_matching_column(issue, self.config)
+        matching_column_name = Project.get_matching_column(item, self.config)
 
-        if self.config.add and self.config.project_number not in issue.get_associated_project():
+        if self.config.add and self.config.project_number not in item.get_associated_project():
             project = self.load_project_column(matching_column_name)
-            project.add_item(self.client, issue, matching_column_name, self.config)
+            project.add_item(self.client, item, matching_column_name, self.config)
             return
 
-        column_name_before = [value['project_column'] for _id, value in issue.card_id_project.items()
+        column_name_before = [value['project_column'] for _id, value in item.card_id_project.items()
                               if value['project_number'] == self.config.project_number][0]
         if (self.config.add and not column_name_before) or \
                 (self.config.move and matching_column_name != column_name_before):
-            print(f'Moving {issue.title} from {column_name_before}')
+            print(f'Moving {item.title} from {column_name_before}')
             project = self.load_project_column(matching_column_name)
-            project.move_item(self.client, issue, matching_column_name, self.config)
+            project.move_item(self.client, item, matching_column_name, self.config)
             return
 
         if self.config.sort and column_name_before == matching_column_name:
@@ -104,45 +88,40 @@ class EventManager(object):
 
             return
 
-    def get_issue_object(self):
-        issue_number = self.get_issue_number(self.event)
-        if issue_number is None:
-            return   # In case the event is not for an issue
-
-        issue_response = self.client.get_issue(
-            self.project_owner, self.repository_name, issue_number)  # need to address the remove here
-        issue = Issue(**parse_issue(issue_response['repository']['issue']))
-        return issue
-
-    def get_pull_request_object(self):
-        pull_request_number = self.get_pull_request_number(self.event)
-        if pull_request_number is None:
-            return  # In case the event is not a pull request
-
-        pr_response = self.client.get_pull_request(...)
-        pull_request = PullRequest(**parse_pull_request(pr_response['repository']['pull_request']))
-        return pull_request
+    def get_project_item_object(self):
+        if 'issue' in self.event:
+            issue_number = self.event['issue']['number']
+            issue_response = self.client.get_issue(
+                self.project_owner, self.repository_name, issue_number)  # need to address the remove here
+            issue = Issue(**parse_issue(issue_response['repository']['issue']))
+            return issue
+        elif 'pull_request' in self.event:
+            pr_number = self.event['pull_request']['number']
+            pr_response = self.client.get_pull_request(self.project_owner, self.repository_name, pr_number)
+            pr = PullRequest(**parse_pull_request(pr_response['repository']['pullRequest']))
+            return pr
+        else:
+            print("This is not an issue or a pull request.")
+            return
 
     def run(self):
-        issue = self.get_issue_object()
-        if issue:
-            if issue.state == 'CLOSED':
-                print("The issue is closed, not taking an action.")
-                return
-
-            for conf_path in self.conf_paths:
-                self.config = Configuration(conf_path, self.verbose, self.quiet, self.log_path)
-                self.config.load_properties()
-
-                if (self.config.project_number in issue.get_associated_project() or
-                        is_matching_project_item(issue.labels, self.config.must_have_labels,
-                                                 self.config.cant_have_labels, self.config.filter_labels)):
-                    issue.set_priority(self.config.priority_list)
-                    self.manage_issue_in_project(issue)
-
-                else:
-                    self.config.logger.debug(f"The issue does not match the filter provided in the configuration "
-                                             f"file {conf_path}.")
-        else:
-            # pull_request = self.get_pull_request_object()  # TODO: Complete this part
+        item = self.get_project_item_object()
+        if item is None:
             return  # In case the event is not for an issue / pull request
+        if item.state == 'CLOSED':
+            print("The issue is closed, not taking an action.")
+            return
+
+        for conf_path in self.conf_paths:
+            self.config = Configuration(conf_path, self.verbose, self.quiet, self.log_path)
+            self.config.load_properties()
+
+            if (self.config.project_number in item.get_associated_project() or
+                    is_matching_project_item(item.labels, self.config.must_have_labels,
+                                             self.config.cant_have_labels, self.config.filter_labels)):
+                item.set_priority(self.config.priority_list)
+                self.manage_item_in_project(item)
+
+            else:
+                self.config.logger.debug(f"The issue does not match the filter provided in the configuration "
+                                         f"file {conf_path}.")
