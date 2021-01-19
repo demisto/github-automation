@@ -290,8 +290,8 @@ class Project(object):
     def add_item(self, client, item, column_name, config):
         item_type = "issue" if isinstance(item, Issue) else "pull request"
         if column_name not in config.column_names:
-            config.logger.warning(f"Did not found a matching column for your {item_type}, please check your configuration "
-                                  f"file. The {item_type} was {item.title}")
+            config.logger.warning(f"Did not found a matching column for your {item_type}, "
+                                  f"please check your configuration file. The {item_type} was {item.title}")
             return
 
         column_id = self.columns[column_name].id if column_name else ''
