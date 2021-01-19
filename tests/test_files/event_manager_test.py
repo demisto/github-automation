@@ -11,6 +11,8 @@ from github_automation.management.event_manager import EventManager
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 
+# TODO: add pull requests unit tests here
+
 
 def test_loading_event_manager():
 
@@ -94,6 +96,8 @@ def test_loading_event_manager():
                     "willCloseTarget": True,
                     "source": {
                         "__typename": "PullRequest",
+                        "id": "42",
+                        "title": "test1",
                         "state": "OPEN",
                         "isDraft": False,
                         "assignees": {
@@ -286,6 +290,7 @@ def test_load_project_column():
                                             "state": "CONTENT_ONLY",
                                             "id": "id=",
                                             "content": {
+                                                "__typename": "Issue",
                                                 "id": "id=",
                                                 "number": 1,
                                                 "title": "title",
@@ -343,6 +348,7 @@ def test_load_project_column():
                                             "state": "CONTENT_ONLY",
                                             "id": "cardid2=",
                                             "content": {
+                                                "__typename": 'Issue',
                                                 "id": "id2=",
                                                 "number": 2,
                                                 "title": "title2",
@@ -513,7 +519,7 @@ def test_load_project_column():
     }
 
     class MockClient(object):
-        def add_issues_to_project(self, **kwargs):
+        def add_items_to_project(self, **kwargs):
             return {
                 "addProjectCard": {
                     "cardEdge": {
@@ -539,13 +545,13 @@ def test_load_project_column():
         def get_project_layout(*args, **kwargs):
             return project_layout
 
-        def get_first_column_issues(*args, **kwargs):
+        def get_first_column_items(*args, **kwargs):
             if 'start_cards_cursor' in kwargs:
                 return project_column1_no_after
 
             return project_column1
 
-        def get_column_issues(*args, **kwargs):
+        def get_column_items(*args, **kwargs):
             if 'start_cards_cursor' in kwargs:
                 return project_column2_no_after
 
@@ -579,7 +585,7 @@ def test_event_manager_flow(mocker):
                              },
                              config=config
                              )
-    mocker.patch.object(EventManager, "get_issue_object", return_value=Issue(
+    mocker.patch.object(EventManager, "get_project_item_object", return_value=Issue(
         id="1",
         title="this is a test title",
         number=1,
@@ -591,7 +597,7 @@ def test_event_manager_flow(mocker):
                         )
 
     class MockClient(object):
-        def add_issues_to_project(*args, **kwargs):
+        def add_items_to_project(*args, **kwargs):
             return {
                 "addProjectCard": {
                     "cardEdge": {
@@ -617,10 +623,7 @@ def test_event_manager_flow(mocker):
 
 def test_loading_event_manager_without_an_issue():
     event = {
-        "action": "some action",
-        "pull_request": {
-            "number": 1
-        }
+        "action": "some action"
     }
 
     class mock_client(object):
@@ -636,7 +639,7 @@ def test_loading_event_manager_without_an_issue():
 
 
 def test_loading_event_manager_with_closed_issue():
-
+    # TODO: add a pull request example
     issue_id = "=asdf=sdf="
     title = "issue name"
     labels = ["HighEffort", "Low", "bug", "test"]
@@ -717,6 +720,8 @@ def test_loading_event_manager_with_closed_issue():
                     "willCloseTarget": True,
                     "source": {
                         "__typename": "PullRequest",
+                        "id": "43",
+                        "title": "test2",
                         "state": "OPEN",
                         "isDraft": False,
                         "assignees": {

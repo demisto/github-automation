@@ -18,8 +18,10 @@ class Configuration(object):
         'issue.assignees',
         'issue.labels',
         'issue.pull_request.assignees',
-        'issue.pull_request.labels'
-    ]   # TODO: Add pull requests
+        'issue.pull_request.labels',
+        'pull_request.assignees',
+        'pull_request.labels'
+    ]
     PERMITTED_QUERIES = [
         'issue.assignees',
         'issue.pull_request',
@@ -27,9 +29,12 @@ class Configuration(object):
         'issue.labels',
         'issue.pull_request.review_completed',
         'issue.pull_request.assignees',
-        'issue.pull_request.labels'
+        'issue.pull_request.labels',
+        'pull_request.assignees',
+        'pull_request.review_requested',
+        'pull_request.labels',
+        'pull_request.review_completed',
     ]  # TODO: load this list dynamically from the project
-    # TODO: Add pull requests
     GENERAL_SECTIONS = [
         'General',
         'Actions'
@@ -54,7 +59,7 @@ class Configuration(object):
         self.config.read(conf_file_path)
 
         # General
-        self.closed_item_column = ''
+        self.closed_issues_column = ''
         self.project_owner = ''
         self.repository_name = ''
         self.project_number = None

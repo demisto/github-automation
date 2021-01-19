@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from github_automation.common.utils import get_labels
 from github_automation.core.project_item.base_project_item.base_project_item import BaseProjectItem, extract_assignees, \
     extract_project_cards
-from github_automation.core.project_item.issue.pull_request import PullRequest, parse_pull_request
+from github_automation.core.project_item.pull_request.pull_request import PullRequest, parse_pull_request_for_issue
 
 
 def _get_milestone(github_issue_object):
@@ -22,7 +22,7 @@ def _get_pull_request(issue_node):
         if timeline_node['willCloseTarget'] and timeline_node['source']['__typename'] == 'PullRequest' \
                 and timeline_node['source']['state'] == 'OPEN' and not timeline_node['source']['isDraft']:
 
-            return PullRequest(**parse_pull_request(timeline_node))
+            return PullRequest(**parse_pull_request_for_issue(timeline_node))
 
 
 def parse_issue(github_issue):

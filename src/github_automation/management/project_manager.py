@@ -34,6 +34,8 @@ class ProjectManager(object):
 
     def construct_pull_request_object(self, github_prs):
         prs = {}
+        if 'edges' not in github_prs:
+            return prs
         for edge in github_prs['edges']:
             node_data = edge['node']
             pr_labels = get_labels(node_data['labels']['edges'])
@@ -87,7 +89,7 @@ class ProjectManager(object):
                                                         after=None)
         pull_requests = response.get('repository', {}).get('pullRequests', {})
 
-        while response.get('repository', {}).get('pullRequests', {}).get('pageInfo').get('hasNextPage'):
+        while response.get('repository', {}).get('pullRequests', {}).get('pageInfo', {}).get('hasNextPage'):
             after = response.get('repository', {}).get('pullRequests', {}).get('pageInfo', {}).get('endCursor')
             response = self.client.get_github_pull_requests(owner=self.config.project_owner,
                                                             name=self.config.repository_name,

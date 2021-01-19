@@ -8,6 +8,36 @@ from github_automation.core.project_item.base_project_item.base_project_item imp
 )
 
 
+def _extract_assignees_from_nodes(assignee_nodes):
+    assignees = []
+    for assignee in assignee_nodes:
+        if assignee:
+            assignees.append(assignee['login'])
+
+    return assignees
+
+
+def _get_labels_from_nodes(label_nodes):
+    labels = []
+    for label in label_nodes:
+        if label:
+            labels.append(label['name'])
+
+    return labels
+
+
+def parse_pull_request_for_issue(pull_request_node):
+    return {
+        "id": pull_request_node['source']['id'],
+        "title": pull_request_node['source']['title'],
+        "number": pull_request_node['source']['number'],
+        "assignees": _extract_assignees_from_nodes(pull_request_node['source']['assignees']['nodes']),
+        "labels": _get_labels_from_nodes(pull_request_node['source']['labels']['nodes']),
+        "review_requested": is_review_requested(pull_request_node['source']),
+        "review_completed": is_review_completed(pull_request_node['source'])
+    }
+
+
 def parse_pull_request(pull_request_node):
     return {
         "id": pull_request_node["id"],

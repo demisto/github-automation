@@ -30,9 +30,10 @@ def parse_pull_request_card(card_edge: dict, config: Configuration):
 
 def parse_item_card(card_edge: dict, config: Configuration):
     # __typename PullRequest is expected for PullRequest and Issue for Issue
-    if card_edge.get('__typename') == 'PullRequest':
+    typename = card_edge.get('node', {}).get('content', {}).get('__typename')
+    if typename == 'PullRequest':
         parse_pull_request_card(card_edge, config)
-    elif card_edge.get('__typename') == 'Issue':
+    elif typename == 'Issue':
         return parse_issue_card(card_edge, config)
     else:
         print("This is not an issue or a pull request, and we still do not support other github "
@@ -93,10 +94,9 @@ class ProjectColumn(object):
     def get_all_item_ids(self):
         return {card.item_id for card in self.cards}
 
-    def add_card(self, card_id, client, new_item):
+    def add_card(self, card_id, new_item, client):
         insert_after_position = len(self.cards) - 1  # In case it should be the lowest issue
-        new_items_flag = new_item > self.cards[0].get_item()
-        if not self.cards or new_items_flag:
+        if not self.cards or new_item > self.cards[0].get_item():
             self.cards.insert(0, ItemCard(id=card_id, item=new_item))
             try:
                 client.add_to_column(card_id=card_id,
@@ -218,12 +218,20 @@ class Project(object):
 
     @staticmethod
     def get_matching_column(item, config: Configuration):
+        is_issue = isinstance(item, Issue)
         column_name = ''
         for tested_column_name in config.column_rule_desc_order:
             conditions = config.column_to_rules[tested_column_name]
             is_true = True
             for condition, condition_value in conditions.items():
                 try:
+                    # replace "issue" and "pull_request" queries with item
+                    if isinstance(condition, str):
+                        if condition.startswith('issue.') and is_issue:
+                            condition = condition.replace('issue', 'item')
+                        elif condition.startswith('pull_request.') and not is_issue:
+                            condition = condition.replace('pull_request.', 'item')
+                        # TODO: consider replacing this with a solution that doesn't use eval()
                     condition_results = eval(condition)
                 except AttributeError:
                     is_true = False
@@ -344,7 +352,7 @@ class Project(object):
 
     def remove_items(self, client, config: Configuration):
         for column in self.columns.values():
-            if column.name == config.closed_item_column:  # Not going over closed issues
+            if column.name == config.closed_issues_column:  # Not going over closed issues
                 continue
 
             indexes_to_delete = []
@@ -367,7 +375,7 @@ class Project(object):
 
     def sort_items_in_columns(self, client, config):
         for column_name, column in self.columns.items():
-            if column.name == config.closed_item_column:  # Not going over closed issues
+            if column.name == config.closed_issues_column:  # Not going over closed issues
                 continue
 
             column.sort_cards(client, config)

@@ -121,6 +121,8 @@ class GraphQLClient(object):
                                   source {
                                     __typename
                                     ... on PullRequest {
+                                      id
+                                      title
                                       state
                                       isDraft
                                       assignees(first:10){
@@ -206,6 +208,8 @@ class GraphQLClient(object):
                               source {
                                 __typename
                                 ... on PullRequest {
+                                  id
+                                  title
                                   state
                                   isDraft
                                   assignees(first:10){
@@ -414,6 +418,8 @@ class GraphQLClient(object):
               source {
                 __typename
                 ... on PullRequest {
+                  id
+                  title
                   state
                   isDraft
                   assignees(first: 5) {

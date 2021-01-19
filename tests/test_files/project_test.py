@@ -14,6 +14,8 @@ from github_automation.management.configuration import Configuration
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 
 
+# TODO: Add pull request tests
+
 def test_project():
     project = Project(**parse_project({
         "name": "test",
@@ -35,6 +37,7 @@ def test_project():
                                       "state": "CONTENT_ONLY",
                                       "id": "3434=",
                                       "content": {
+                                          "__typename": "Issue",
                                           "id": "1234=",
                                           "number": 1,
                                           "title": "issue 1",
@@ -77,6 +80,7 @@ def test_project():
                                       "state": "CONTENT_ONLY",
                                       "id": "56565=",
                                       "content": {
+                                          "__typename": "Issue",
                                           "id": "5656=",
                                           "number": 15,
                                           "title": "issue 2",
@@ -142,7 +146,7 @@ def test_set_issue_to_issue_card():
         labels=labels,
         assignees=[assignee]
     )
-    card = ItemCard("id", issue=issue)
+    card = ItemCard("id", item=issue)
     assert card.id == 'id'
     assert card.issue == issue
 
@@ -154,7 +158,7 @@ def test_project_empty_card():
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
                                    cards=[ItemCard(id="sdf",
-                                                   issue=Issue(id="sdf", title="title", number=1))]),
+                                                   item=Issue(id="sdf", title="title", number=1))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
@@ -177,9 +181,9 @@ def test_add_card_to_column():
     column_object = ProjectColumn(id="id", name="Review in progress",
                                   cards=[
                                       ItemCard(id="sdf",
-                                               issue=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
+                                               item=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
                                       ItemCard(id="sdf2",
-                                               issue=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
+                                               item=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
                                   ])
     issue_to_inject = Issue(
         id="4",
@@ -262,11 +266,11 @@ def test_sort_column():
         id="id", name="Review in progress",
         cards=[
             ItemCard(id="sdf",
-                     issue=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
+                     item=Issue(id="sdf", title="issue 2", number=2, labels=["Low"])),
             ItemCard(id="sdf3",
-                     issue=Issue(id="sdf", title="issue 4", number=4, labels=["Medium"])),
+                     item=Issue(id="sdf", title="issue 4", number=4, labels=["Medium"])),
             ItemCard(id="sdf2",
-                     issue=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
+                     item=Issue(id="sdf2", title="issue 3", number=3, labels=["High"]))
         ])
 
     column_object.sort_cards(mock_client, config)
@@ -352,7 +356,7 @@ def test_missing_issues():
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
                                    cards=[ItemCard(id="sdf",
-                                                   issue=Issue(id="sdf", title="title", number=1))]),
+                                                   item=Issue(id="sdf", title="title", number=1))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
@@ -381,7 +385,7 @@ def test_removing_issues():
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
                                    cards=[ItemCard(id="sdf",
-                                                   issue=Issue(id="sdf", title="title", number=1))]),
+                                                   item=Issue(id="sdf", title="title", number=1))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
@@ -407,7 +411,7 @@ def test_adding_issue():
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
                                    cards=[ItemCard(id="sdf",
-                                                   issue=Issue(id="sdf", title="title", number=2))]),
+                                                   item=Issue(id="sdf", title="title", number=2))]),
             "Review in progress": ProjectColumn(id="id", name="Review in progress",
                                                 cards=[])
         }
@@ -427,7 +431,7 @@ def test_adding_issue():
     }
 
     class ClientMock(object):
-        def add_issues_to_project(*args, **kwargs):
+        def add_items_to_project(*args, **kwargs):
             return {
                 'addProjectCard': {
                     'cardEdge': {
@@ -504,7 +508,7 @@ def test_move_issues():
         columns={
             "Queue": ProjectColumn(id="id", name="Queue",
                                    cards=[ItemCard(id="sdf",
-                                                   issue=issue)]),
+                                                   item=issue)]),
             "In progress": ProjectColumn(id="id", name="In progress", cards=[])
         }
     )

@@ -7,13 +7,15 @@ from github_automation.management.configuration import Configuration
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 
+# TODO: Add test for pull request configuration
+
 
 def test_loading_configuration():
     configuration = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), quiet=True, log_path="/tmp/")
     assert 'General' in configuration.config.sections()
     configuration.load_properties()
 
-    assert configuration.closed_item_column == 'Done'
+    assert configuration.closed_issues_column == 'Done'
     assert configuration.project_owner == 'ronykoz'
     assert configuration.repository_name == 'test'
     assert configuration.project_number == 1

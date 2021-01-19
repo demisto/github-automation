@@ -52,6 +52,7 @@ def test_loading():
                                             "state": "CONTENT_ONLY",
                                             "id": "3434=",
                                             "content": {
+                                                "__typename": "Issue",
                                                 "id": "1234=",
                                                 "number": 1,
                                                 "title": "issue 1",
@@ -106,6 +107,7 @@ def test_loading():
                                                 "state": "CONTENT_ONLY",
                                                 "id": "56565=",
                                                 "content": {
+                                                    "__typename": "Issue",
                                                     "id": "56567=",
                                                     "number": 15,
                                                     "title": "issue 2",
@@ -143,6 +145,7 @@ def test_loading():
                                                 "state": "CONTENT_ONLY",
                                                 "id": "123=",
                                                 "content": {
+                                                    "__typename": "Issue",
                                                     "id": "1234=",
                                                     "number": 3,
                                                     "title": "issue 3",
@@ -358,10 +361,10 @@ def test_loading():
         def get_project_layout(self, **kwargs):
             return project_layout
 
-        def get_first_column_issues(self, **kwargs):
+        def get_first_column_items(self, **kwargs):
             return column1
 
-        def get_column_issues(self, **kwargs):
+        def get_column_items(self, **kwargs):
             return column2
 
         def get_github_issues(self, **kwargs):
@@ -375,6 +378,9 @@ def test_loading():
 
         def move_to_specific_place_in_column(self, **kwargs):
             return
+
+        def get_github_pull_requests(self, **kwargs):
+            return {}  # TODO: add a non-redundant implementation for this
 
     client = MockClient()
     manager = ProjectManager(configuration=config, client=client)
