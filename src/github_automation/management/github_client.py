@@ -749,7 +749,7 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
     }
   }
 }
-''', {"owner": owner, "name": name, "issueNumber": pull_request_number})
+''', {"owner": owner, "name": name, "prNumber": pull_request_number})
 
     def get_column_items(self, owner, name, project_number, prev_column_id, start_cards_cursor=''):
         return self.execute_query('''
