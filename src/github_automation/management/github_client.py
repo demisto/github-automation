@@ -753,7 +753,8 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
 
     def get_column_items(self, owner, name, project_number, prev_column_id, start_cards_cursor=''):
         return self.execute_query('''
-        query ($owner: String!, $name: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor: String) {
+        query ($owner: String!, $name: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor:
+        String) {
   repository(owner: $owner, name: $name) {
     project(number: $projectNumber) {
       name

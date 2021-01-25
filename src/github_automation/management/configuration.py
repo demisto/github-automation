@@ -50,10 +50,6 @@ class Configuration(object):
                          'General section, or miss-spelled. The section name is {}'
     ILLEGAL_QUERY = "You have entered an illegal query - {}, the possible options are:\n" + '\n'.join(PERMITTED_QUERIES)
 
-    class RunMode(enum.Enum):
-        Issues = "issues"
-        PullRequests = "pull_requests"
-
     def __init__(self, conf_file_path, verbose=2, quiet=False, log_path=''):
         self.config = ConfigParser(allow_no_value=True)
         self.config.read(conf_file_path)
@@ -70,7 +66,6 @@ class Configuration(object):
         self.cant_have_labels = []
         self.column_names = []
         self.column_rule_desc_order = []
-        self.run_mode = self.RunMode.Issues  # TODO: Finish impl Add documentation [General] run_mode = pull_requests
 
         # Actions
         self.remove = False
