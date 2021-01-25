@@ -32,7 +32,7 @@ def parse_item_card(card_edge: dict, config: Configuration):
     # __typename PullRequest is expected for PullRequest and Issue for Issue
     typename = card_edge.get('node', {}).get('content', {}).get('__typename')
     if typename == 'PullRequest':
-        parse_pull_request_card(card_edge, config)
+        return parse_pull_request_card(card_edge, config)
     elif typename == 'Issue':
         return parse_issue_card(card_edge, config)
     else:
@@ -227,10 +227,18 @@ class Project(object):
                 try:
                     # replace "issue" and "pull_request" queries with item
                     if isinstance(condition, str):
-                        if condition.startswith('issue.') and is_issue:
-                            condition = condition.replace('issue', 'item')
-                        elif condition.startswith('pull_request.') and not is_issue:
-                            condition = condition.replace('pull_request.', 'item')
+                        if is_issue:
+                            if condition.startswith('issue.'):
+                                condition = condition.replace('issue', 'item')
+                            else:
+                                is_true = False
+                                continue
+                        else:
+                            if condition.startswith('pull_request.'):
+                                condition = condition.replace('pull_request', 'item')
+                            else:
+                                is_true = False
+                                continue
                         # TODO: consider replacing this with a solution that doesn't use eval()
                     condition_results = eval(condition)
                 except AttributeError:
@@ -360,18 +368,19 @@ class Project(object):
                 if not is_matching_project_item(card.get_labels(), config.must_have_labels,
                                                 config.cant_have_labels, config.filter_labels):
                     indexes_to_delete.append(index)
-                    self.remove_item(client, card.item_title, card.id, config)
+                    self.remove_item(client, card.item_title, card.id, config, card.get_item())
 
             for index_to_delete in sorted(indexes_to_delete, reverse=True):  # Removing from bottom to top
                 del column.cards[index_to_delete]
 
     @staticmethod
-    def remove_item(client, issue_title, card_id, config):
-        config.logger.info(f'Removing issue {issue_title} from project')
+    def remove_item(client, issue_title, card_id, config, item=None):
+        item_type = 'issue' if item is None else ('issue' if isinstance(item, Issue) else 'pull request')
+        config.logger.info(f'Removing {item_type} {issue_title} from project')
         try:
             client.delete_project_card(card_id)
         except Exception as ex:
-            config.logger.warning(f'The issue {issue_title} was not removed due to {str(ex)}')
+            config.logger.warning(f'The {item_type} {issue_title} was not removed due to {str(ex)}')
 
     def sort_items_in_columns(self, client, config):
         for column_name, column in self.columns.items():

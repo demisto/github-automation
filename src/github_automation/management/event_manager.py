@@ -63,7 +63,7 @@ class EventManager(object):
 
             card_id = [_id for _id, value in item.card_id_project.items()
                        if value['project_number'] == self.config.project_number][0]
-            Project.remove_item(self.client, item.title, card_id, self.config)
+            Project.remove_item(self.client, item.title, card_id, self.config, item)
             return
 
         matching_column_name = Project.get_matching_column(item, self.config)

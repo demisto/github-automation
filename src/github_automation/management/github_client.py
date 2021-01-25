@@ -85,99 +85,272 @@ class GraphQLClient(object):
         vars = {"owner": owner, "name": name, "labels": labels, "milestone": milestone, "after": after}
         if not milestone:
             del vars['milestone']
-        if not after:
-            del vars['after']
-
         if not labels:
             del vars['labels']
-            return self.execute_query('''
-                query ($after: String!, $owner: String!, $name: String!, $milestone: String){
-                  repository(owner: $owner, name: $name) {
-                    issues(first: 100, after:$after, states: OPEN, filterBy:{milestone: $milestone}) {
-                      edges {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        cursor
-                        node {
-                        projectCards(first:5){
-                        nodes{
-                          id
-                          column {
-                            name
-                          }
-                          project{
-                            number
+            if not after:
+                del vars['after']
+                return self.execute_query('''
+                                query ($owner: String!, $name: String!, $milestone: String){
+                                  repository(owner: $owner, name: $name) {
+                                    issues(first: 100, states: OPEN, filterBy:{milestone: $milestone}) {
+                                      pageInfo {
+                                        hasNextPage
+                                        endCursor
+                                      }
+                                      edges {
+                                        cursor
+                                        node {
+                                        projectCards(first:5){
+                                        nodes{
+                                          id
+                                          column {
+                                            name
+                                          }
+                                          project{
+                                            number
+                                            }
+                                          }
+                                        }
+                                          timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
+                                            __typename
+                                            ... on IssueTimelineItemsConnection{
+                                              nodes {
+                                                ... on CrossReferencedEvent {
+                                                  willCloseTarget
+                                                  source {
+                                                    __typename
+                                                    ... on PullRequest {
+                                                      id
+                                                      title
+                                                      state
+                                                      isDraft
+                                                      assignees(first:10){
+                                                        nodes{
+                                                          login
+                                                        }
+                                                      }
+                                                      labels(first:5){
+                                                        nodes{
+                                                          name
+                                                        }
+                                                      }
+                                                      reviewRequests(first:1){
+                                                        totalCount
+                                                      }
+                                                      reviews(first:1){
+                                                        totalCount
+                                                      }
+                                                      number
+                                                      reviewDecision
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                          title
+                                          id
+                                          number
+                                          state
+                                          milestone {
+                                            title
+                                          }
+                                          labels(first: 10) {
+                                            edges {
+                                              node {
+                                                name
+                                              }
+                                            }
+                                          }
+                                          assignees(last: 10) {
+                                            edges {
+                                              node {
+                                                id
+                                                login
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }''', vars)
+            else:
+                return self.execute_query('''
+                    query ($after: String!, $owner: String!, $name: String!, $milestone: String){
+                      repository(owner: $owner, name: $name) {
+                        issues(first: 100, after:$after, states: OPEN, filterBy:{milestone: $milestone}) {
+                          edges {
+                            pageInfo {
+                              hasNextPage
+                              endCursor
+                            }
+                            cursor
+                            node {
+                            projectCards(first:5){
+                            nodes{
+                              id
+                              column {
+                                name
+                              }
+                              project{
+                                number
+                                }
+                              }
+                            }
+                              timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
+                                __typename
+                                ... on IssueTimelineItemsConnection{
+                                  nodes {
+                                    ... on CrossReferencedEvent {
+                                      willCloseTarget
+                                      source {
+                                        __typename
+                                        ... on PullRequest {
+                                          id
+                                          title
+                                          state
+                                          isDraft
+                                          assignees(first:10){
+                                            nodes{
+                                              login
+                                            }
+                                          }
+                                          labels(first:5){
+                                            nodes{
+                                              name
+                                            }
+                                          }
+                                          reviewRequests(first:1){
+                                            totalCount
+                                          }
+                                          reviews(first:1){
+                                            totalCount
+                                          }
+                                          number
+                                          reviewDecision
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                              title
+                              id
+                              number
+                              state
+                              milestone {
+                                title
+                              }
+                              labels(first: 10) {
+                                edges {
+                                  node {
+                                    name
+                                  }
+                                }
+                              }
+                              assignees(last: 10) {
+                                edges {
+                                  node {
+                                    id
+                                    login
+                                  }
+                                }
+                              }
                             }
                           }
                         }
-                          timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
-                            __typename
-                            ... on IssueTimelineItemsConnection{
-                              nodes {
-                                ... on CrossReferencedEvent {
-                                  willCloseTarget
-                                  source {
-                                    __typename
-                                    ... on PullRequest {
+                      }
+                    }''', vars)
+        if not after:
+            del vars['after']
+            return self.execute_query('''
+                        query ($owner: String!, $name: String!, $labels: [String!], $milestone: String){
+                          repository(owner: $owner, name: $name) {
+                            issues(first: 100, states: OPEN, filterBy:{labels: $labels, milestone: $milestone}) {
+                              pageInfo {
+                                hasNextPage
+                                endCursor
+                              }
+                              edges {
+                                cursor
+                                node {
+                                    projectCards(first:5){
+                                    nodes{
                                       id
-                                      title
-                                      state
-                                      isDraft
-                                      assignees(first:10){
-                                        nodes{
-                                          login
+                                      column {
+                                        name
+                                      }
+                                      project{
+                                        number
+                                      }
+                                    }
+                                  }
+                                  timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
+                                    __typename
+                                    ... on IssueTimelineItemsConnection{
+                                      nodes {
+                                        ... on CrossReferencedEvent {
+                                          willCloseTarget
+                                          source {
+                                            __typename
+                                            ... on PullRequest {
+                                              id
+                                              title
+                                              state
+                                              isDraft
+                                              assignees(first:10){
+                                                nodes{
+                                                  login
+                                                }
+                                              }
+                                              labels(first:5){
+                                                nodes{
+                                                  name
+                                                }
+                                              }
+                                              reviewRequests(first:1){
+                                                totalCount
+                                              }
+                                              reviews(first:1){
+                                                totalCount
+                                              }
+                                              number
+                                              reviewDecision
+                                            }
+                                          }
                                         }
                                       }
-                                      labels(first:5){
-                                        nodes{
-                                          name
-                                        }
+                                    }
+                                  }
+                                  title
+                                  id
+                                  number
+                                  milestone {
+                                    title
+                                  }
+                                  labels(first: 10) {
+                                    edges {
+                                      node {
+                                        name
                                       }
-                                      reviewRequests(first:1){
-                                        totalCount
+                                    }
+                                  }
+                                  assignees(last: 10) {
+                                    edges {
+                                      node {
+                                        id
+                                        login
                                       }
-                                      reviews(first:1){
-                                        totalCount
-                                      }
-                                      number
-                                      reviewDecision
                                     }
                                   }
                                 }
                               }
                             }
                           }
-                          title
-                          id
-                          number
-                          state
-                          milestone {
-                            title
-                          }
-                          labels(first: 10) {
-                            edges {
-                              node {
-                                name
-                              }
-                            }
-                          }
-                          assignees(last: 10) {
-                            edges {
-                              node {
-                                id
-                                login
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }''', vars)
-
-        return self.execute_query('''
+                        }''', vars)
+        else:
+            return self.execute_query('''
             query ($after: String, $owner: String!, $name: String!, $labels: [String!], $milestone: String){
               repository(owner: $owner, name: $name) {
                 issues(first: 100, after:$after, states: OPEN, filterBy:{labels: $labels, milestone: $milestone}) {
@@ -267,63 +440,119 @@ class GraphQLClient(object):
         vars = {"owner": owner, "name": name, "after": after}
         if not after:
             del vars['after']
-
-        return self.execute_query('''
-            query ($after: String!, $owner: String!, $name: String!) {
-              repository(owner: $owner, name: $name) {
-                pullRequests(first: 100, after:$after, states: OPEN) {
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
-                  edges {
-                    cursor
-                    node {
-                      title
-                      id
-                      state
-                      number
-                      mergedAt
-                      merged
-                      reviewDecision
-                      reviews(last: 10) {
-                        totalCount
+            return self.execute_query('''
+                query ($owner: String!, $name: String!) {
+                  repository(owner: $owner, name: $name) {
+                    pullRequests(first: 100, states: OPEN) {
+                      pageInfo {
+                        endCursor
+                        hasNextPage
                       }
-                      reviewRequests(first: 10) {
-                        totalCount
-                      }
-                      labels(first: 10) {
-                        edges {
-                          node {
-                            name
-                          }
-                        }
-                      }
-                      assignees(last: 10) {
-                        edges {
-                          node {
-                            id
-                            login
-                          }
-                        }
-                      }
-                      projectCards(first: 5) {
-                        nodes {
+                      edges {
+                        cursor
+                        node {
+                          title
                           id
-                          column {
-                            name
+                          state
+                          number
+                          mergedAt
+                          merged
+                          reviewDecision
+                          reviews(last: 10) {
+                            totalCount
                           }
-                          project {
-                            number
+                          reviewRequests(first: 10) {
+                            totalCount
+                          }
+                          labels(first: 10) {
+                            edges {
+                              node {
+                                name
+                              }
+                            }
+                          }
+                          assignees(last: 10) {
+                            edges {
+                              node {
+                                id
+                                login
+                              }
+                            }
+                          }
+                          projectCards(first: 5) {
+                            nodes {
+                              id
+                              column {
+                                name
+                              }
+                              project {
+                                number
+                              }
+                            }
                           }
                         }
                       }
                     }
                   }
                 }
-              }
-            }
-            ''', vars)
+                ''', vars)
+        else:
+            return self.execute_query('''
+                query ($after: String!, $owner: String!, $name: String!) {
+                  repository(owner: $owner, name: $name) {
+                    pullRequests(first: 100, after:$after, states: OPEN) {
+                      pageInfo {
+                        endCursor
+                        hasNextPage
+                      }
+                      edges {
+                        cursor
+                        node {
+                          title
+                          id
+                          state
+                          number
+                          mergedAt
+                          merged
+                          reviewDecision
+                          reviews(last: 10) {
+                            totalCount
+                          }
+                          reviewRequests(first: 10) {
+                            totalCount
+                          }
+                          labels(first: 10) {
+                            edges {
+                              node {
+                                name
+                              }
+                            }
+                          }
+                          assignees(last: 10) {
+                            edges {
+                              node {
+                                id
+                                login
+                              }
+                            }
+                          }
+                          projectCards(first: 5) {
+                            nodes {
+                              id
+                              column {
+                                name
+                              }
+                              project {
+                                number
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                ''', vars)
 
     def add_items_to_project(self, issue_id, column_id):
         return self.execute_query('''
@@ -524,8 +753,7 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
 
     def get_column_items(self, owner, name, project_number, prev_column_id, start_cards_cursor=''):
         return self.execute_query('''
-        query ($owner: String!, $name: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor:
-        String) {
+        query ($owner: String!, $name: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor: String) {
   repository(owner: $owner, name: $name) {
     project(number: $projectNumber) {
       name
@@ -578,6 +806,13 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
                         }
                       }
                     }
+                    reviewDecision
+                    reviews(last: 10) {
+                      totalCount
+                    }
+                    reviewRequests(first: 10) {
+                      totalCount
+                    }
                     assignees(first: 10) {
                       edges {
                         node {
@@ -622,6 +857,7 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
                     state
                     id
                     content {
+                      __typename
                       ... on Issue {
                         id
                         number

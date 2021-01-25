@@ -5,10 +5,11 @@ from setuptools import find_packages, setup
 with open('./README.md', 'r') as f:
     readme = f.read()
 
+# TODO: revert this change
 
 setup(
     name='github-automation',
-    use_scm_version=True,
+    use_scm_version=False,
     setup_requires=['setuptools_scm'],
     url='https://github.com/demisto/github-automation',
     license='MIT',
