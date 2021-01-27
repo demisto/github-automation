@@ -14,6 +14,8 @@ def test_loading_configuration():
     configuration.load_properties()
 
     assert configuration.closed_issues_column == 'Done'
+    assert configuration.merged_pull_requests_column == 'Done'
+    assert configuration.closed_pull_requests_column == 'Done'
     assert configuration.project_owner == 'ronykoz'
     assert configuration.repository_name == 'test'
     assert configuration.project_number == 1
@@ -22,10 +24,8 @@ def test_loading_configuration():
     assert configuration.filter_milestone == ''
     assert configuration.must_have_labels == ['test']
     assert configuration.cant_have_labels == ['not test']
-    assert configuration.column_names == ['Queue', 'In progress', 'Review in progress', 'Waiting for Docs',
-                                          'Pull Request Review Complete']
-    assert configuration.column_rule_desc_order == ['Queue', 'Waiting for Docs', 'Review in progress', 'In progress',
-                                                    'Pull Request Review Complete']
+    assert configuration.column_names == ['Queue', 'In progress', 'Review in progress', 'Waiting for Docs']
+    assert configuration.column_rule_desc_order == ['Queue', 'Waiting for Docs', 'Review in progress', 'In progress']
 
     assert configuration.remove is True
     assert configuration.add is True
@@ -34,7 +34,7 @@ def test_loading_configuration():
 
     assert configuration.column_to_rules['Waiting for Docs']['issue.pull_request.review_requested'] is True
     assert configuration.column_to_rules['Waiting for Docs']['issue.pull_request.assignees'] == ['ronykoz||not rony']
-    assert configuration.column_to_rules['Pull Request Review Complete']['pull_request.review_completed'] is True
+    assert configuration.column_to_rules['In progress']['pull_request.review_requested'] is False
 
 
 def test_loading_illegal_configuration():
