@@ -7,8 +7,6 @@ from github_automation.management.configuration import Configuration
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 
-# TODO: Add test for pull request configuration
-
 
 def test_loading_configuration():
     configuration = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), quiet=True, log_path="/tmp/")
@@ -24,8 +22,10 @@ def test_loading_configuration():
     assert configuration.filter_milestone == ''
     assert configuration.must_have_labels == ['test']
     assert configuration.cant_have_labels == ['not test']
-    assert configuration.column_names == ['Queue', 'In progress', 'Review in progress', 'Waiting for Docs']
-    assert configuration.column_rule_desc_order == ['Queue', 'Waiting for Docs', 'Review in progress', 'In progress']
+    assert configuration.column_names == ['Queue', 'In progress', 'Review in progress', 'Waiting for Docs',
+                                          'Pull Request Review Complete']
+    assert configuration.column_rule_desc_order == ['Queue', 'Waiting for Docs', 'Review in progress', 'In progress',
+                                                    'Pull Request Review Complete']
 
     assert configuration.remove is True
     assert configuration.add is True
@@ -34,6 +34,7 @@ def test_loading_configuration():
 
     assert configuration.column_to_rules['Waiting for Docs']['issue.pull_request.review_requested'] is True
     assert configuration.column_to_rules['Waiting for Docs']['issue.pull_request.assignees'] == ['ronykoz||not rony']
+    assert configuration.column_to_rules['Pull Request Review Complete']['pull_request.review_completed'] is True
 
 
 def test_loading_illegal_configuration():

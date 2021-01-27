@@ -21,14 +21,13 @@ def extract_project_cards(project_cards):
             "project_number": node['project']['number']
         }
         if 'column' in node and node['column'] and 'name' in node['column']:
-            # TODO: Remove this, it's only used to get previous name of column in events_manager
             card_id_project[node['id']]['project_column'] = node['column']['name']
 
     return card_id_project
 
 
-def is_review_requested(pull_request_source):
-    if pull_request_source['reviewRequests']['totalCount'] or pull_request_source['reviews']['totalCount']:
+def is_review_requested(pull_request_node):
+    if pull_request_node['reviewRequests']['totalCount'] or pull_request_node['reviews']['totalCount']:
         return True
 
     else:
@@ -37,6 +36,10 @@ def is_review_requested(pull_request_source):
 
 def is_review_completed(pull_request_node):
     return False if pull_request_node["reviewDecision"] != "APPROVED" else True
+
+
+def is_review_requested_changes(pull_request_node):
+    return False if pull_request_node["reviewDecision"] != "CHANGES_REQUESTED" else True
 
 
 class BaseProjectItem(object):

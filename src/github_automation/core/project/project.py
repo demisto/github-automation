@@ -5,8 +5,8 @@ from typing import Dict, List, Union
 
 from github_automation.common.constants import OR
 from github_automation.common.utils import is_matching_project_item
-from github_automation.core.project_item.issue.issue import Issue, parse_issue
-from github_automation.core.project_item.pull_request.pull_request import PullRequest, parse_pull_request
+from github_automation.core.project_item.issue import Issue, parse_issue
+from github_automation.core.project_item.pull_request import PullRequest, parse_pull_request
 from github_automation.management.configuration import Configuration
 
 
@@ -218,57 +218,55 @@ class Project(object):
 
     @staticmethod
     def get_matching_column(item, config: Configuration):
-        is_issue = isinstance(item, Issue)
+        is_issue = isinstance(item, Issue)  # assumes if not issue -> pull_request
         column_name = ''
         for tested_column_name in config.column_rule_desc_order:
             conditions = config.column_to_rules[tested_column_name]
-            is_true = True
+
+            # filter and rename conditions to match current item type
+            relevant_conditions = {}
             for condition, condition_value in conditions.items():
-                try:
-                    # replace "issue" and "pull_request" queries with item
-                    if isinstance(condition, str):
-                        if is_issue:
-                            if condition.startswith('issue.'):
-                                condition = condition.replace('issue', 'item')
-                            else:
-                                is_true = False
-                                continue
-                        else:
-                            if condition.startswith('pull_request.'):
-                                condition = condition.replace('pull_request', 'item')
-                            else:
-                                is_true = False
-                                continue
+                if is_issue and condition.startswith('issue.'):
+                    relevant_conditions[condition.replace('issue', 'item', 1)] = condition_value
+                elif not is_issue and condition.startswith('pull_request.'):
+                    relevant_conditions[condition.replace('pull_request', 'item', 1)] = condition_value
+
+            # if no relevant conditions - not true
+            is_true = len(relevant_conditions) > 0
+
+            if is_true:
+                for condition, condition_value in relevant_conditions.items():
+                    try:
                         # TODO: consider replacing this with a solution that doesn't use eval()
-                    condition_results = eval(condition)
-                except AttributeError:
-                    is_true = False
-                    break
-
-                if isinstance(condition_value, list):  # todo: add the option to have not condition
-                    for option in condition_value:
-                        if OR in option:
-                            options = option.split(OR)
-                            if not any([True if option in condition_results else False for option in options]):
-                                is_true = False
-                                break
-
-                        elif option not in condition_results:
-                            is_true = False
-                            break
-
-                elif isinstance(condition_value, bool):
-                    if condition_value is not bool(condition_results):
+                        condition_results = eval(condition)
+                    except AttributeError:
                         is_true = False
                         break
 
-                elif condition_value != condition_results or condition_value not in condition_results:
-                    is_true = False
-                    break
+                    if isinstance(condition_value, list):  # todo: add the option to have not condition
+                        for option in condition_value:
+                            if OR in option:
+                                options = option.split(OR)
+                                if not any([True if option in condition_results else False for option in options]):
+                                    is_true = False
+                                    break
 
-            if is_true:
-                column_name = tested_column_name
-                break
+                            elif option not in condition_results:
+                                is_true = False
+                                break
+
+                    elif isinstance(condition_value, bool):
+                        if condition_value is not bool(condition_results):
+                            is_true = False
+                            break
+
+                    elif condition_value != condition_results or condition_value not in condition_results:
+                        is_true = False
+                        break
+
+                if is_true:
+                    column_name = tested_column_name
+                    break
 
             config.logger.debug(f'{item.title} did not match the filters of the column - \'{tested_column_name}\'')
 
@@ -360,7 +358,7 @@ class Project(object):
 
     def remove_items(self, client, config: Configuration):
         for column in self.columns.values():
-            if column.name == config.closed_issues_column:  # Not going over closed issues
+            if column.name in config.get_closed_columns():  # skip closed columns
                 continue
 
             indexes_to_delete = []
@@ -384,7 +382,7 @@ class Project(object):
 
     def sort_items_in_columns(self, client, config):
         for column_name, column in self.columns.items():
-            if column.name == config.closed_issues_column:  # Not going over closed issues
+            if column.name in config.get_closed_columns():  # Not going over closed columns
                 continue
 
             column.sort_cards(client, config)

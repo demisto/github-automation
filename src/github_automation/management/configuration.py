@@ -1,4 +1,3 @@
-import enum
 import logging
 import os
 from configparser import ConfigParser
@@ -20,7 +19,7 @@ class Configuration(object):
         'issue.pull_request.assignees',
         'issue.pull_request.labels',
         'pull_request.assignees',
-        'pull_request.labels'
+        'pull_request.labels',
     ]
     PERMITTED_QUERIES = [
         'issue.assignees',
@@ -30,10 +29,12 @@ class Configuration(object):
         'issue.pull_request.review_completed',
         'issue.pull_request.assignees',
         'issue.pull_request.labels',
+        'issue.pull_request.review_requested_changes',
         'pull_request.assignees',
         'pull_request.review_requested',
         'pull_request.labels',
         'pull_request.review_completed',
+        'pull_request.review_requested_changes',
     ]  # TODO: load this list dynamically from the project
     GENERAL_SECTIONS = [
         'General',
@@ -56,6 +57,8 @@ class Configuration(object):
 
         # General
         self.closed_issues_column = ''
+        self.closed_pull_requests_column = ''
+        self.merged_pull_requests_column = ''
         self.project_owner = ''
         self.repository_name = ''
         self.project_number = None
@@ -136,6 +139,9 @@ class Configuration(object):
         self.load_general_properties()
         self.load_actions()
         self.load_column_rules()
+
+    def get_closed_columns(self):
+        return self.closed_issues_column, self.closed_pull_requests_column, self.merged_pull_requests_column
 
     @staticmethod
     def logging_setup(verbose, quiet, log_path, conf_file_path):

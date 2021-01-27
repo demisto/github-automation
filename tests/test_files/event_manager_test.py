@@ -4,17 +4,15 @@ import sys
 from io import StringIO
 from copy import deepcopy
 
-from github_automation.core.project_item.issue.issue import Issue
+from github_automation.core.project_item.issue import Issue
 from github_automation.core.project.project import Project, ProjectColumn
 from github_automation.management.configuration import Configuration
 from github_automation.management.event_manager import EventManager
 
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 
-# TODO: add pull requests unit tests here
 
-
-def test_loading_event_manager():
+def test_loading_event_manager_with_issue():
 
     issue_id = "=asdf=sdf="
     title = "issue name"
@@ -170,7 +168,7 @@ def test_loading_event_manager():
         }
     }
 
-    event = {
+    issue_event = {
         "action": "some action",
         "issue": {
             "number": 1
@@ -186,11 +184,112 @@ def test_loading_event_manager():
             }
 
     client = mock_client()
-    manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(event))
+    manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(issue_event))
 
     issue_object = manager.get_project_item_object()
     assert issue_object.number == 1
     assert issue_object.title == title
+
+
+def test_loading_event_manager_with_pull_request():
+
+    pr_id = "=asdf=sdf="
+    title = "pr name"
+    labels = ["HighEffort", "Low", "bug", "test"]
+    assignee = "daud"
+
+    pull_request = {
+        "projectCards": {
+            "nodes": [
+                {
+                    "id": "id=",
+                    "column": {
+                        "name": "testing"
+                    },
+                    "project": {
+                        "number": 1
+                    }
+                },
+                {
+                    "id": "id2=",
+                    "column": {
+                        "name": "Queue"
+                    },
+                    "project": {
+                        "number": 2
+                    }
+                }
+            ]
+        },
+        "title": title,
+        "id": pr_id,
+        "number": 1,
+        "state": "OPEN",
+        "mergedAt": None,
+        "merged": False,
+        "reviewDecision": None,
+        "reviews": {
+            "totalCount": 0
+        },
+        "reviewRequests": {
+            "totalCount": 0
+        },
+        "labels": {
+            "edges": [
+                {
+                    "node": {
+                        "name": labels[0]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[1]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[2]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[3]
+                    }
+                }
+            ]
+        },
+        "assignees": {
+            "edges": [
+                {
+                    "node": {
+                        "login": assignee
+                    }
+                }
+            ]
+        }
+    }
+
+    pr_event = {
+        "action": "some action",
+        "pull_request": {
+            "number": 1
+        }
+    }
+
+    class mock_client(object):
+        def get_pull_request(*args, **kwargs):
+            return {
+                "repository": {
+                    "pullRequest": pull_request
+                }
+            }
+
+    client = mock_client()
+    manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(pr_event))
+
+    pr_object = manager.get_project_item_object()
+    assert pr_object.number == 1
+    assert pr_object.title == title
 
 
 def test_get_prev_column():
@@ -621,7 +720,7 @@ def test_event_manager_flow(mocker):
     assert len(project_object.get_all_item_ids()) == 1
 
 
-def test_loading_event_manager_without_an_issue():
+def test_loading_event_manager_without_an_item():
     event = {
         "action": "some action"
     }
@@ -639,7 +738,6 @@ def test_loading_event_manager_without_an_issue():
 
 
 def test_loading_event_manager_with_closed_issue():
-    # TODO: add a pull request example
     issue_id = "=asdf=sdf="
     title = "issue name"
     labels = ["HighEffort", "Low", "bug", "test"]
@@ -818,5 +916,109 @@ def test_loading_event_manager_with_closed_issue():
     sys.stdout = out
 
     assert manager.run() is None
-    assert 'The issue is closed' in out.getvalue()
+    assert 'The item is closed' in out.getvalue()
+    sys.stdout = saved_stdout
+
+
+def test_loading_event_manager_with_merged_pull_request():
+    pr_id = "=asdf=sdf="
+    title = "pr name"
+    labels = ["HighEffort", "Low", "bug", "test"]
+    assignee = "daud"
+
+    pull_request = {
+        "projectCards": {
+            "nodes": [
+                {
+                    "id": "id=",
+                    "column": {
+                        "name": "testing"
+                    },
+                    "project": {
+                        "number": 1
+                    }
+                },
+                {
+                    "id": "id2=",
+                    "column": {
+                        "name": "Queue"
+                    },
+                    "project": {
+                        "number": 2
+                    }
+                }
+            ]
+        },
+        "title": title,
+        "id": pr_id,
+        "number": 1,
+        "state": "MERGED",
+        "mergedAt": "2021-01-25T15:27:08Z",
+        "merged": True,
+        "reviewDecision": None,
+        "reviews": {
+            "totalCount": 0
+        },
+        "reviewRequests": {
+            "totalCount": 0
+        },
+        "labels": {
+            "edges": [
+                {
+                    "node": {
+                        "name": labels[0]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[1]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[2]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[3]
+                    }
+                }
+            ]
+        },
+        "assignees": {
+            "edges": [
+                {
+                    "node": {
+                        "login": assignee
+                    }
+                }
+            ]
+        }
+    }
+
+    event = {
+        "action": "some action",
+        "pull_request": {
+            "number": 1
+        }
+    }
+
+    class mock_client(object):
+        def get_pull_request(*args, **kwargs):
+            return {
+                "repository": {
+                    "pullRequest": pull_request
+                }
+            }
+
+    client = mock_client()
+    saved_stdout = sys.stdout
+    manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(event))
+
+    out = StringIO()
+    sys.stdout = out
+
+    assert manager.run() is None
+    assert 'The item is merged' in out.getvalue()
     sys.stdout = saved_stdout

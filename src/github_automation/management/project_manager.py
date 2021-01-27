@@ -3,8 +3,8 @@ from __future__ import absolute_import
 from github_automation.common.utils import (get_column_items_with_prev_column,
                                             get_first_column_items,
                                             is_matching_project_item, get_labels)
-from github_automation.core.project_item.issue.issue import Issue, parse_issue
-from github_automation.core.project_item.pull_request.pull_request import PullRequest, parse_pull_request
+from github_automation.core.project_item.issue import Issue, parse_issue
+from github_automation.core.project_item.pull_request import PullRequest, parse_pull_request
 from github_automation.core.project.project import Project, parse_project
 from github_automation.management.configuration import Configuration
 from github_automation.management.github_client import GraphQLClient

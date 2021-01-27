@@ -5,9 +5,9 @@ import json
 from github_automation.common.utils import (get_column_items_with_prev_column,
                                             get_first_column_items,
                                             is_matching_project_item)
-from github_automation.core.project_item.issue.issue import Issue, parse_issue
+from github_automation.core.project_item.issue import Issue, parse_issue
 from github_automation.core.project.project import Project, parse_project
-from github_automation.core.project_item.pull_request.pull_request import PullRequest, parse_pull_request
+from github_automation.core.project_item.pull_request import PullRequest, parse_pull_request
 from github_automation.management.configuration import Configuration
 from github_automation.management.github_client import GraphQLClient
 
@@ -108,8 +108,8 @@ class EventManager(object):
         item = self.get_project_item_object()
         if item is None:
             return  # In case the event is not for an issue / pull request
-        if item.state == 'CLOSED':
-            print("The issue is closed, not taking an action.")
+        if item.state and item.state.upper() in ('CLOSED', 'MERGED'):
+            print(f"The item is {item.state.lower()}, not taking an action.")
             return
 
         for conf_path in self.conf_paths:

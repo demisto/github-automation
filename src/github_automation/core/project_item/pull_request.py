@@ -1,10 +1,10 @@
 from github_automation.common.utils import get_labels
-from github_automation.core.project_item.base_project_item.base_project_item import (
+from github_automation.core.project_item.base_project_item import (
     BaseProjectItem,
     extract_assignees,
     extract_project_cards,
     is_review_requested,
-    is_review_completed,
+    is_review_completed, is_review_requested_changes,
 )
 
 
@@ -34,7 +34,9 @@ def parse_pull_request_for_issue(pull_request_node):
         "assignees": _extract_assignees_from_nodes(pull_request_node['source']['assignees']['nodes']),
         "labels": _get_labels_from_nodes(pull_request_node['source']['labels']['nodes']),
         "review_requested": is_review_requested(pull_request_node['source']),
-        "review_completed": is_review_completed(pull_request_node['source'])
+        "review_completed": is_review_completed(pull_request_node['source']),
+        "review_requested_changes": is_review_requested_changes(pull_request_node['source']),
+        "state": pull_request_node['source'].get('state', "")
     }
 
 
@@ -53,6 +55,7 @@ def parse_pull_request(pull_request_node):
         "state": pull_request_node.get("state", ""),
         "review_requested": is_review_requested(pull_request_node),
         "review_completed": is_review_completed(pull_request_node),
+        "review_requested_changes": is_review_requested_changes(pull_request_node),
     }
 
 
@@ -69,6 +72,7 @@ class PullRequest(BaseProjectItem):
         state: str = "",
         review_requested: bool = False,
         review_completed: bool = False,
+        review_requested_changes: bool = False,
     ):
         super().__init__(
             id,
@@ -82,3 +86,4 @@ class PullRequest(BaseProjectItem):
         )
         self.review_requested = review_requested
         self.review_completed = review_completed
+        self.review_requested_changes = review_requested_changes

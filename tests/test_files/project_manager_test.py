@@ -175,6 +175,54 @@ def test_loading():
                                                     }
                                                 }
                                             }
+                                        },
+                                        {
+                                            "cursor": "HZ",
+                                            "node": {
+                                                "note": None,
+                                                "state": "CONTENT_ONLY",
+                                                "id": "76565=",
+                                                "content": {
+                                                    "__typename": "PullRequest",
+                                                    "title": "pull_request 1",
+                                                    "id": "76566=",
+                                                    "state": "OPEN",
+                                                    "number": 20,
+                                                    "mergedAt": None,
+                                                    "merged": False,
+                                                    "reviewDecision": None,
+                                                    "reviews": {
+                                                        "totalCount": 0
+                                                    },
+                                                    "reviewRequests": {
+                                                        "totalCount": 0
+                                                    },
+                                                    "labels": {
+                                                        "edges": [
+                                                            {
+                                                                "node": {
+                                                                    "name": "Medium"
+                                                                }
+                                                            },
+                                                            {
+                                                                "node": {
+                                                                    "name": "bug"
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    "assignees": {
+                                                        "edges": [
+                                                            {
+                                                                "node": {
+                                                                    "id": "334",
+                                                                    "login": "Daud Daud"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
                                         }
                                     ]
                                 }
@@ -185,9 +233,84 @@ def test_loading():
         }
     }
 
-    issue_id = "=asdf=sdf="
-    title = "issue name"
+    pr_id = "=zxcx=sads="
+    pr_title = "pr name"
     labels = ["HighEffort", "Critical", "bug", "test", "Testing"]
+    assignee = "daud"
+
+    pull_request = {
+        "projectCards": {
+            "nodes": [
+                {
+                    "id": "id=",
+                    "column": {
+                        "name": "testing"
+                    },
+                    "project": {
+                        "number": 1
+                    }
+                },
+                {
+                    "id": "id2=",
+                    "column": {
+                        "name": "Queue"
+                    },
+                    "project": {
+                        "number": 2
+                    }
+                }
+            ]
+        },
+        "title": pr_title,
+        "id": pr_id,
+        "number": 1,
+        "state": "MERGED",
+        "mergedAt": "2021-01-25T15:27:08Z",
+        "merged": True,
+        "reviewDecision": None,
+        "reviews": {
+            "totalCount": 0
+        },
+        "reviewRequests": {
+            "totalCount": 1
+        },
+        "labels": {
+            "edges": [
+                {
+                    "node": {
+                        "name": labels[0]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[1]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[2]
+                    }
+                },
+                {
+                    "node": {
+                        "name": labels[3]
+                    }
+                }
+            ]
+        },
+        "assignees": {
+            "edges": [
+                {
+                    "node": {
+                        "login": assignee
+                    }
+                }
+            ]
+        }
+    }
+
+    issue_id = "=asdf=sdf="
+    issue_title = "issue name"
     issue = {
         "projectCards": {
             "nodes": [
@@ -262,7 +385,7 @@ def test_loading():
                 }
             ]
         },
-        "title": title,
+        "title": issue_title,
         "id": issue_id,
         "number": 1,
         "milestone": {
@@ -308,7 +431,7 @@ def test_loading():
         }
     }
 
-    issues = {
+    items = {
         "repository": {
             "issues": {
                 "pageInfo": {
@@ -369,7 +492,7 @@ def test_loading():
 
         def get_github_issues(self, **kwargs):
             if not kwargs['after']:
-                return issues
+                return items
 
             return issues_with_no_after
 
@@ -380,27 +503,53 @@ def test_loading():
             return
 
         def get_github_pull_requests(self, **kwargs):
-            return {}  # TODO: add a non-redundant implementation for this
+            return {
+              "repository": {
+                "pullRequests": {
+                  "pageInfo": {
+                    "endCursor": "cursor",
+                    "hasNextPage": False
+                  },
+                  "edges": [
+                    {
+                      "node": pull_request,
+                    }
+                    ]
+                }
+              }
+            }
+
 
     client = MockClient()
     manager = ProjectManager(configuration=config, client=client)
 
     assert len(manager.matching_issues) == 1
+    assert len(manager.matching_pull_requests) == 1
     assert manager.project.name == 'test'
     assert manager.project.get_current_location("56567=") == ("In progress", "56565=")
     assert manager.project.get_current_location("Random text") == (None, None)
     assert manager.project.is_in_column("In progress", "56567=") is True
     assert manager.project.is_in_column("In progress", "Random text") is False
 
+    # assert there're 3 items 'In Progress' column
     manager.project.sort_items_in_columns(client, config)
-    issues = [card.issue.title for card in manager.project.columns['In progress'].cards]
-    assert issues == ['issue 3', 'issue 2']
+    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    assert items == ['issue 3', 'issue 2', "pull_request 1"]
 
+    # remove a single issue from the column
     manager.project.columns['In progress'].remove_card("56565=")
-    issues = [card.issue.title for card in manager.project.columns['In progress'].cards]
-    assert len(issues) == 1
+    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    assert len(items) == 2
     assert manager.project.is_in_column("In progress", "1234=") is True
+    assert manager.project.is_in_column("In progress", "76566=") is True
     assert manager.project.is_in_column("In progress", "56565=") is False
+
+    # remove a single pull request from the column
+    manager.project.columns['In progress'].remove_card("76565=")
+    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    assert len(items) == 1
+    assert manager.project.is_in_column("In progress", "1234=") is True
+    assert manager.project.is_in_column("In progress", "76566=") is False
 
     manager.manage()
     assert manager.project.is_in_column("In progress", "56565=") is False

@@ -5,15 +5,14 @@ from setuptools import find_packages, setup
 with open('./README.md', 'r') as f:
     readme = f.read()
 
-# TODO: revert this change
 
 setup(
     name='github-automation',
-    use_scm_version=False,
+    use_scm_version=True,
     setup_requires=['setuptools_scm'],
     url='https://github.com/demisto/github-automation',
     license='MIT',
-    author='Rony Kozakish',
+    author='Rony Kozakish & Dean Arbel',
     author_email='',
     description='GitHub automatic project manager tool',
     install_requires=[
