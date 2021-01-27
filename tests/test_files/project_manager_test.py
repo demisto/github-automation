@@ -519,7 +519,6 @@ def test_loading():
               }
             }
 
-
     client = MockClient()
     manager = ProjectManager(configuration=config, client=client)
 
