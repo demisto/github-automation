@@ -50,7 +50,7 @@ class ItemCard(object):
         self.pull_request = item if isinstance(item, PullRequest) else None
 
         self.item_id = self.issue.id if self.issue else self.pull_request.id
-        self.item_title = self.issue.title if self.issue else self.pull_request.id
+        self.item_title = self.issue.title if self.issue else self.pull_request.title
 
     def get_item(self):
         if self.issue:
@@ -169,7 +169,7 @@ class ProjectColumn(object):
         for index, card in enumerate(sorted_cards):
             if card.id != self.cards[index].id:
                 self.move_card_in_list(card.id, index)
-                config.logger.info(f"Moving item '{card.item_title}' in column '{self.name}' to position: {index}")
+                config.logger.info(f"Moving {str(card.get_item())} '{card.item_title}' in column '{self.name}' to position: {index}")
                 if index == 0:
                     try:
                         client.add_to_column(card_id=card.id,
