@@ -52,17 +52,14 @@ class ItemCard(object):
         self.item_id = self.issue.id if self.issue else self.pull_request.id
         self.item_title = self.issue.title if self.issue else self.pull_request.id
 
-    def get_labels(self):
-        if self.issue:
-            return self.issue.labels
-        elif self.pull_request:
-            return self.pull_request.labels
-
     def get_item(self):
         if self.issue:
             return self.issue
         else:
             return self.pull_request
+
+    def get_labels(self):
+        return self.get_item().labels
 
 
 def _extract_card_node_data(column_node: dict, config: Configuration):
