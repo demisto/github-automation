@@ -8,6 +8,7 @@ from github_automation.common.utils import is_matching_project_item
 from github_automation.core.project_item.issue import Issue, parse_issue
 from github_automation.core.project_item.pull_request import PullRequest, parse_pull_request
 from github_automation.management.configuration import Configuration
+from github_automation.management.github_client import GraphQLClient
 
 
 def parse_issue_card(card_edge: dict, config: Configuration):
@@ -94,7 +95,7 @@ class ProjectColumn(object):
     def get_all_item_ids(self):
         return {card.item_id for card in self.cards}
 
-    def add_card(self, card_id, new_item, client):
+    def add_card(self, card_id: str, new_item: Union[Issue, PullRequest], client: GraphQLClient):
         insert_after_position = len(self.cards) - 1  # In case it should be the lowest issue
         if not self.cards or new_item > self.cards[0].get_item():
             self.cards.insert(0, ItemCard(id=card_id, item=new_item))
@@ -113,7 +114,7 @@ class ProjectColumn(object):
                     except Exception as ex:
                         exception_msg += '\n' + str(ex)
 
-                self.config.logger.warning(f'The item {new_item.title} was not added due to {exception_msg}')
+                self.config.logger.warning(f'The {str(new_item)} {new_item.title} was not added due to {exception_msg}')
 
             return
 
@@ -141,7 +142,7 @@ class ProjectColumn(object):
                 except Exception as ex:
                     exception_msg += '\n' + str(ex)
 
-            self.config.logger.warning(f'The item {new_item.title} was not added due to {exception_msg}')
+            self.config.logger.warning(f'The {str(new_item)} {new_item.title} was not added due to {exception_msg}')
 
     def get_card_id(self, item_id):
         for card in self.cards:
@@ -294,7 +295,7 @@ class Project(object):
             self.add_item(client, items[item_id], column_name, config)
 
     def add_item(self, client, item, column_name, config):
-        item_type = "issue" if isinstance(item, Issue) else "pull request"
+        item_type = str(item)
         if column_name not in config.column_names:
             config.logger.warning(f"Did not found a matching column for your {item_type}, "
                                   f"please check your configuration file. The {item_type} was {item.title}")
@@ -343,7 +344,7 @@ class Project(object):
             self.columns[column_name_before].remove_card(card_id)
 
     def move_item(self, client, item, column_name, config: Configuration):
-        item_type = 'issue' if isinstance(item, Issue) else "pull request"
+        item_type = str(item)
         if item.state == 'closed':
             config.logger.debug(f'skipping {item.title} because the {item_type} is closed')
             return
@@ -373,7 +374,7 @@ class Project(object):
 
     @staticmethod
     def remove_item(client, issue_title, card_id, config, item=None):
-        item_type = 'issue' if item is None else ('issue' if isinstance(item, Issue) else 'pull request')
+        item_type = 'issue' if item is None else (str(item))
         config.logger.info(f'Removing {item_type} {issue_title} from project')
         try:
             client.delete_project_card(card_id)

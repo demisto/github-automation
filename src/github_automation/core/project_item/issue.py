@@ -46,3 +46,6 @@ class Issue(BaseProjectItem):
         super().__init__(id, title, number, assignees, labels, card_id_to_project, priority_list, state)
         self.milestone = milestone
         self.pull_request = pull_request
+
+    def __str__(self):
+        return 'issue'

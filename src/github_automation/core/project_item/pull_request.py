@@ -87,3 +87,6 @@ class PullRequest(BaseProjectItem):
         self.review_requested = review_requested
         self.review_completed = review_completed
         self.review_requested_changes = review_requested_changes
+
+    def __str__(self):
+        return 'pull request'
