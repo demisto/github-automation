@@ -169,7 +169,8 @@ class ProjectColumn(object):
         for index, card in enumerate(sorted_cards):
             if card.id != self.cards[index].id:
                 self.move_card_in_list(card.id, index)
-                config.logger.info(f"Moving {str(card.get_item())} '{card.item_title}' in column '{self.name}' to position: {index}")
+                config.logger.info(f"Moving {str(card.get_item())} '{card.item_title}' in column "
+                                   f"'{self.name}' to position: {index}")
                 if index == 0:
                     try:
                         client.add_to_column(card_id=card.id,
