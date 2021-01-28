@@ -35,11 +35,11 @@ def is_review_requested(pull_request_node):
 
 
 def is_review_completed(pull_request_node):
-    return False if pull_request_node["reviewDecision"] != "APPROVED" else True
+    return pull_request_node["reviewDecision"] == "APPROVED"
 
 
 def is_review_requested_changes(pull_request_node):
-    return False if pull_request_node["reviewDecision"] != "CHANGES_REQUESTED" else True
+    return pull_request_node["reviewDecision"] == "CHANGES_REQUESTED"
 
 
 class BaseProjectItem(object):
