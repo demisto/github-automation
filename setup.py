@@ -8,7 +8,7 @@ with open('./README.md', 'r') as f:
 
 setup(
     name='github-automation',
-    use_scm_version=True,
+    use_scm_version=False,
     setup_requires=['setuptools_scm'],
     url='https://github.com/demisto/github-automation',
     license='MIT',
