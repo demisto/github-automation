@@ -45,6 +45,8 @@ This section will help you set the basic rules for the project. All the fields t
 Here is a quick explanation about their meaning:
 
 - closed_issues_column - The column name of the closed issues.
+- closed_pull_requests_column - The column name of the closed pull requests.
+- merged_pull_requests_column - The column name of the merged pull requests.
 - project_owner - The project owner or organization the repository is in.
 - repository_name - The name of the repository containing the project.
 - project_number - The project number you will want to manage
@@ -69,9 +71,17 @@ The supported options are:
 The column section is the place you will determine the rules for that column. The optional keys are:
 
 - issue.assignees - Could be the names of the assignees(CSV will be AND condition, and `||` will be OR condition, True for any assignee, False for no assignees)
+- issue.labels - Could be the names of the labels (CSV will be AND condition, and `||` will be OR condition, True for any labels, False for no labels)
 - issue.pull_request - Whether there is a Pull request or not - optional values true/false
 - issue.pull_request.review_requested - Whether a review was requested for the Pull request- optional values true/false
 - issue.pull_request.review_completed - Whether the Pull request review is completed - optional values true/false
+- issue.pull_request.review_requested_changes - Whether the Pull request review requested for changes - optional values true/false
 - issue.pull_request.assignees - Could be the names of the assignees(CSV will be AND condition, and `||` will be OR condition, True for any assignee, False for no assignees)
+- issue.pull_request.labels - Could be the names of the labels (CSV will be AND condition, and `||` will be OR condition, True for any labels, False for no labels)
+- pull_request.assignees - Could be the names of the assignees(CSV will be AND condition, and `||` will be OR condition, True for any assignee, False for no assignees)
+- pull_request.review_requested - Whether a review was requested for the Pull request- optional values true/false
+- pull_request.labels - Could be the names of the labels (CSV will be AND condition, and `||` will be OR condition, True for any labels, False for no labels)
+- pull_request.review_completed - Whether the Pull request review is completed - optional values true/false
+- pull_request.review_requested_changes - Whether the Pull request review requested for changes - optional values true/false
 
 
