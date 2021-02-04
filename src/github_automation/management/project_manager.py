@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 from github_automation.common.utils import (get_column_items_with_prev_column,
                                             get_first_column_items,
-                                            is_matching_project_item, get_labels)
+                                            is_matching_project_item, get_labels,
+                                            get_project_from_response)
 from github_automation.core.project_item.issue import Issue, parse_issue
 from github_automation.core.project_item.pull_request import PullRequest, parse_pull_request
 from github_automation.core.project.project import Project, parse_project
@@ -49,10 +50,13 @@ class ProjectManager(object):
     def get_github_project(self):
         layout = self.client.get_project_layout(owner=self.config.project_owner,
                                                 repository_name=self.config.repository_name,
-                                                project_number=self.config.project_number)
+                                                project_number=self.config.project_number,
+                                                is_org_project=self.config.is_organization_project)
 
-        column_edges = layout['repository']['project']['columns']['edges']
-        project_builder = get_first_column_items(self.client, self.config)
+        layout_project = get_project_from_response(layout, self.config.is_organization_project)
+        column_edges = layout_project['columns']['edges']
+        builder = get_first_column_items(self.client, self.config)
+        builder_project = get_project_from_response(builder, self.config.is_organization_project)
         for index, column in enumerate(column_edges):
             if column['node']['name'] in self.config.column_names:
                 if index == 0:
@@ -60,9 +64,10 @@ class ProjectManager(object):
                 else:
                     prev_cursor = column_edges[index - 1]['cursor']
                     column_response = get_column_items_with_prev_column(self.client, self.config, prev_cursor)
-                    project_builder['repository']['project']['columns']['nodes'].extend(
-                        column_response['repository']['project']['columns']['nodes'])
-        return Project(**parse_project(project_builder['repository']['project'], self.config))
+                    column_project = get_project_from_response(column_response, self.config.is_organization_project)
+                    builder_project['columns']['nodes'].extend(
+                        column_project['columns']['nodes'])
+        return Project(**parse_project(builder_project, self.config))
 
     def get_github_issues(self):
         response = self.client.get_github_issues(owner=self.config.project_owner,

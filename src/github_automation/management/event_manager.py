@@ -4,7 +4,8 @@ import json
 
 from github_automation.common.utils import (get_column_items_with_prev_column,
                                             get_first_column_items,
-                                            is_matching_project_item)
+                                            is_matching_project_item,
+                                            get_project_from_response)
 from github_automation.core.project_item.issue import Issue, parse_issue
 from github_automation.core.project.project import Project, parse_project
 from github_automation.core.project_item.pull_request import PullRequest, parse_pull_request
@@ -34,10 +35,12 @@ class EventManager(object):
     def get_prev_column_cursor(self, column_name):
         layout = self.client.get_project_layout(owner=self.config.project_owner,
                                                 repository_name=self.config.repository_name,
-                                                project_number=self.config.project_number)
+                                                project_number=self.config.project_number,
+                                                is_org_project=self.config.is_organization_project)
 
         prev_cursor = ''
-        column_edges = layout['repository']['project']['columns']['edges']
+        project = get_project_from_response(layout, self.config.is_organization_project)
+        column_edges = project['columns']['edges']
         for index, column in enumerate(column_edges):
             if column_name == column['node']['name']:
                 if index != 0:
@@ -53,7 +56,8 @@ class EventManager(object):
         else:
             response = get_first_column_items(self.client, self.config)
 
-        return Project(**parse_project(response.get("repository", {}).get('project', {}), config=self.config))
+        project = get_project_from_response(response, self.config.is_organization_project)
+        return Project(**parse_project(project, config=self.config))
 
     def manage_item_in_project(self, item):
         if (self.config.remove and self.config.project_number in item.get_associated_project()
@@ -89,6 +93,7 @@ class EventManager(object):
             return
 
     def get_project_item_object(self):
+        """Get the issue or pull request full representation from the API"""
         if 'issue' in self.event:
             issue_number = self.event['issue']['number']
             issue_response = self.client.get_issue(

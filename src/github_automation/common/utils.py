@@ -4,16 +4,20 @@ from github_automation.common.constants import OR
 def get_first_column_items(client, config):
     response = client.get_first_column_items(owner=config.project_owner,
                                              name=config.repository_name,
-                                             project_number=config.project_number)
-    cards_page_info = response['repository']['project']['columns']['nodes'][0]['cards']['pageInfo']
+                                             project_number=config.project_number,
+                                             is_org_project=config.is_organization_project)
+    project_cards = get_project_from_response(response, config.is_organization_project)['columns']['nodes'][0]['cards']
+    cards_page_info = project_cards['pageInfo']
     while cards_page_info['hasNextPage']:
         new_response = client.get_first_column_items(owner=config.project_owner,
                                                      name=config.repository_name,
                                                      project_number=config.project_number,
-                                                     start_cards_cursor=cards_page_info['endCursor'])
-        response['repository']['project']['columns']['nodes'][0]['cards']['edges']. \
-            extend(new_response['repository']['project']['columns']['nodes'][0]['cards']['edges'])
-        cards_page_info = new_response['repository']['project']['columns']['nodes'][0]['cards']['pageInfo']
+                                                     start_cards_cursor=cards_page_info['endCursor'],
+                                                     is_org_project=config.is_organization_project)
+        new_cards = get_project_from_response(new_response,
+                                              config.is_organization_project)['columns']['nodes'][0]['cards']
+        project_cards['edges'].extend(new_cards['edges'])
+        cards_page_info = new_cards['pageInfo']
 
     return response
 
@@ -22,17 +26,21 @@ def get_column_items_with_prev_column(client, config, prev_cursor):
     response = client.get_column_items(owner=config.project_owner,
                                        name=config.repository_name,
                                        project_number=config.project_number,
-                                       prev_column_id=prev_cursor)
-    cards_page_info = response['repository']['project']['columns']['nodes'][0]['cards']['pageInfo']
+                                       prev_column_id=prev_cursor,
+                                       is_org_project=config.is_organization_project)
+    project_cards = get_project_from_response(response, config.is_organization_project)['columns']['nodes'][0]['cards']
+    cards_page_info = project_cards['pageInfo']
     while cards_page_info['hasNextPage']:
         new_response = client.get_column_items(owner=config.project_owner,
                                                name=config.repository_name,
                                                project_number=config.project_number,
                                                prev_column_id=prev_cursor,
-                                               start_cards_cursor=cards_page_info['endCursor'])
-        response['repository']['project']['columns']['nodes'][0]['cards']['edges']. \
-            extend(new_response['repository']['project']['columns']['nodes'][0]['cards']['edges'])
-        cards_page_info = new_response['repository']['project']['columns']['nodes'][0]['cards']['pageInfo']
+                                               start_cards_cursor=cards_page_info['endCursor'],
+                                               is_org_project=config.is_organization_project)
+        new_cards = get_project_from_response(new_response,
+                                              config.is_organization_project)['columns']['nodes'][0]['cards']
+        project_cards['edges'].extend(new_cards['edges'])
+        cards_page_info = new_cards['pageInfo']
 
     return response
 
@@ -65,3 +73,8 @@ def get_labels(label_edges):
             label_names.append(node_data['name'])
 
     return label_names
+
+
+def get_project_from_response(response, is_org_project):
+    root = response['organization'] if is_org_project else response['repository']
+    return root.get('project', {})

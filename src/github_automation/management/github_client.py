@@ -39,145 +39,16 @@ class GraphQLClient(object):
 
             raise
 
-    def get_github_project(self, owner, name, number):
-        return self.execute_query('''
-        query ($owner: String!, $name: String!, $number: Int!){
-          repository(owner: $owner, name: $name) {
-            project(number: $number) {
-              name
-              id
-              number
-              columns(first: 30) {
-                  nodes {
-                    name
-                    id
-                    cards(first: 100) {
-                      edges {
-                        cursor
-                        node {
-                          note
-                          state
-                          id
-                          content {
-                            ... on Issue {
-                              id
-                              number
-                              title
-                              labels(first: 10) {
-                                edges {
-                                  node {
-                                    name
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-              }
-            }
-          }
-        }''', {"owner": owner, "name": name, "number": number})
-
     def get_github_issues(self, owner, name, after, labels, milestone):
         vars = {"owner": owner, "name": name, "labels": labels, "milestone": milestone, "after": after}
         if not milestone:
             del vars['milestone']
+        if not after:
+            del vars['after']
         if not labels:
             del vars['labels']
-            if not after:
-                del vars['after']
-                return self.execute_query('''
-                                query ($owner: String!, $name: String!, $milestone: String){
-                                  repository(owner: $owner, name: $name) {
-                                    issues(first: 100, states: OPEN, filterBy:{milestone: $milestone}) {
-                                      pageInfo {
-                                        hasNextPage
-                                        endCursor
-                                      }
-                                      edges {
-                                        cursor
-                                        node {
-                                        projectCards(first:5){
-                                        nodes{
-                                          id
-                                          column {
-                                            name
-                                          }
-                                          project{
-                                            number
-                                            }
-                                          }
-                                        }
-                                          timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
-                                            __typename
-                                            ... on IssueTimelineItemsConnection{
-                                              nodes {
-                                                ... on CrossReferencedEvent {
-                                                  willCloseTarget
-                                                  source {
-                                                    __typename
-                                                    ... on PullRequest {
-                                                      id
-                                                      title
-                                                      state
-                                                      isDraft
-                                                      assignees(first:10){
-                                                        nodes{
-                                                          login
-                                                        }
-                                                      }
-                                                      labels(first:5){
-                                                        nodes{
-                                                          name
-                                                        }
-                                                      }
-                                                      reviewRequests(first:1){
-                                                        totalCount
-                                                      }
-                                                      reviews(first:1){
-                                                        totalCount
-                                                      }
-                                                      number
-                                                      reviewDecision
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                          title
-                                          id
-                                          number
-                                          state
-                                          milestone {
-                                            title
-                                          }
-                                          labels(first: 10) {
-                                            edges {
-                                              node {
-                                                name
-                                              }
-                                            }
-                                          }
-                                          assignees(last: 10) {
-                                            edges {
-                                              node {
-                                                id
-                                                login
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }''', vars)
-            else:
-                return self.execute_query('''
-                    query ($after: String!, $owner: String!, $name: String!, $milestone: String){
+            return self.execute_query('''
+                    query ($after: String, $owner: String!, $name: String!, $milestone: String){
                       repository(owner: $owner, name: $name) {
                         issues(first: 100, after:$after, states: OPEN, filterBy:{milestone: $milestone}) {
                           edges {
@@ -262,243 +133,98 @@ class GraphQLClient(object):
                         }
                       }
                     }''', vars)
-        if not after:
-            del vars['after']
-            return self.execute_query('''
-                        query ($owner: String!, $name: String!, $labels: [String!], $milestone: String){
-                          repository(owner: $owner, name: $name) {
-                            issues(first: 100, states: OPEN, filterBy:{labels: $labels, milestone: $milestone}) {
-                              pageInfo {
-                                hasNextPage
-                                endCursor
-                              }
-                              edges {
-                                cursor
-                                node {
-                                    projectCards(first:5){
-                                    nodes{
-                                      id
-                                      column {
-                                        name
-                                      }
-                                      project{
-                                        number
-                                      }
-                                    }
-                                  }
-                                  timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
-                                    __typename
-                                    ... on IssueTimelineItemsConnection{
-                                      nodes {
-                                        ... on CrossReferencedEvent {
-                                          willCloseTarget
-                                          source {
-                                            __typename
-                                            ... on PullRequest {
-                                              id
-                                              title
-                                              state
-                                              isDraft
-                                              assignees(first:10){
-                                                nodes{
-                                                  login
-                                                }
-                                              }
-                                              labels(first:5){
-                                                nodes{
-                                                  name
-                                                }
-                                              }
-                                              reviewRequests(first:1){
-                                                totalCount
-                                              }
-                                              reviews(first:1){
-                                                totalCount
-                                              }
-                                              number
-                                              reviewDecision
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                  title
-                                  id
-                                  number
-                                  milestone {
-                                    title
-                                  }
-                                  labels(first: 10) {
-                                    edges {
-                                      node {
-                                        name
-                                      }
-                                    }
-                                  }
-                                  assignees(last: 10) {
-                                    edges {
-                                      node {
-                                        id
-                                        login
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }''', vars)
-        else:
-            return self.execute_query('''
-            query ($after: String, $owner: String!, $name: String!, $labels: [String!], $milestone: String){
-              repository(owner: $owner, name: $name) {
-                issues(first: 100, after:$after, states: OPEN, filterBy:{labels: $labels, milestone: $milestone}) {
-                  pageInfo {
-                    hasNextPage
-                    endCursor
-                  }
-                  edges {
-                    cursor
-                    node {
-                        projectCards(first:5){
-                        nodes{
-                          id
-                          column {
-                            name
-                          }
-                          project{
-                            number
-                          }
-                        }
-                      }
-                      timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
-                        __typename
-                        ... on IssueTimelineItemsConnection{
-                          nodes {
-                            ... on CrossReferencedEvent {
-                              willCloseTarget
-                              source {
-                                __typename
-                                ... on PullRequest {
-                                  id
-                                  title
-                                  state
-                                  isDraft
-                                  assignees(first:10){
-                                    nodes{
-                                      login
-                                    }
-                                  }
-                                  labels(first:5){
-                                    nodes{
-                                      name
-                                    }
-                                  }
-                                  reviewRequests(first:1){
-                                    totalCount
-                                  }
-                                  reviews(first:1){
-                                    totalCount
-                                  }
-                                  number
-                                  reviewDecision
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                      title
+        return self.execute_query('''
+        query ($after: String, $owner: String!, $name: String!, $labels: [String!], $milestone: String){
+          repository(owner: $owner, name: $name) {
+            issues(first: 100, after:$after, states: OPEN, filterBy:{labels: $labels, milestone: $milestone}) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              edges {
+                cursor
+                node {
+                    projectCards(first:5){
+                    nodes{
                       id
-                      number
-                      milestone {
-                        title
+                      column {
+                        name
                       }
-                      labels(first: 10) {
-                        edges {
-                          node {
-                            name
+                      project{
+                        number
+                      }
+                    }
+                  }
+                  timelineItems(first:10, itemTypes:[CROSS_REFERENCED_EVENT]){
+                    __typename
+                    ... on IssueTimelineItemsConnection{
+                      nodes {
+                        ... on CrossReferencedEvent {
+                          willCloseTarget
+                          source {
+                            __typename
+                            ... on PullRequest {
+                              id
+                              title
+                              state
+                              isDraft
+                              assignees(first:10){
+                                nodes{
+                                  login
+                                }
+                              }
+                              labels(first:5){
+                                nodes{
+                                  name
+                                }
+                              }
+                              reviewRequests(first:1){
+                                totalCount
+                              }
+                              reviews(first:1){
+                                totalCount
+                              }
+                              number
+                              reviewDecision
+                            }
                           }
                         }
                       }
-                      assignees(last: 10) {
-                        edges {
-                          node {
-                            id
-                            login
-                          }
-                        }
+                    }
+                  }
+                  title
+                  id
+                  number
+                  milestone {
+                    title
+                  }
+                  labels(first: 10) {
+                    edges {
+                      node {
+                        name
+                      }
+                    }
+                  }
+                  assignees(last: 10) {
+                    edges {
+                      node {
+                        id
+                        login
                       }
                     }
                   }
                 }
               }
-            }''', vars)
+            }
+          }
+        }''', vars)
 
     def get_github_pull_requests(self, owner, name, after):
         vars = {"owner": owner, "name": name, "after": after}
         if not after:
             del vars['after']
-            return self.execute_query('''
-                query ($owner: String!, $name: String!) {
-                  repository(owner: $owner, name: $name) {
-                    pullRequests(first: 100, states: OPEN) {
-                      pageInfo {
-                        endCursor
-                        hasNextPage
-                      }
-                      edges {
-                        cursor
-                        node {
-                          title
-                          id
-                          state
-                          number
-                          mergedAt
-                          merged
-                          reviewDecision
-                          reviews(last: 10) {
-                            totalCount
-                          }
-                          reviewRequests(first: 10) {
-                            totalCount
-                          }
-                          labels(first: 10) {
-                            edges {
-                              node {
-                                name
-                              }
-                            }
-                          }
-                          assignees(last: 10) {
-                            edges {
-                              node {
-                                id
-                                login
-                              }
-                            }
-                          }
-                          projectCards(first: 5) {
-                            nodes {
-                              id
-                              column {
-                                name
-                              }
-                              project {
-                                number
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                ''', vars)
-        else:
-            return self.execute_query('''
-                query ($after: String!, $owner: String!, $name: String!) {
+        return self.execute_query('''
+                query ($after: String, $owner: String!, $name: String!) {
                   repository(owner: $owner, name: $name) {
                     pullRequests(first: 100, after:$after, states: OPEN) {
                       pageInfo {
@@ -602,10 +328,9 @@ class GraphQLClient(object):
           }
         }''', {'cardId': card_id})
 
-    def get_project_layout(self, owner, repository_name, project_number):
-        return self.execute_query('''
-        query ($owner: String!, $name: String!, $number: Int!){
-      repository(owner: $owner, name: $name) {
+    def get_project_layout(self, owner, repository_name, project_number, is_org_project=False):
+        query_args = {"owner": owner, "name": repository_name, "number": project_number}
+        query = '''
         project(number: $number) {
           name
           id
@@ -620,7 +345,17 @@ class GraphQLClient(object):
           }
         }
       }
-    }''', {"owner": owner, "name": repository_name, "number": project_number})
+    }'''
+        if is_org_project:
+            # replace repository query with org query and remove name for args
+            query_prefix = '''query ($owner: String!, $number: Int!) {
+            organization(login: $owner) {\n'''
+            del query_args['name']
+        else:
+            query_prefix = '''query ($owner: String!, $name: String!, $number: Int!){
+            repository(owner: $owner, name: $name) {\n'''
+        query = query_prefix + query
+        return self.execute_query(query, query_args)
 
     def get_issue(self, owner, name, issue_number):
         return self.execute_query('''
@@ -751,11 +486,11 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
 }
 ''', {"owner": owner, "name": name, "prNumber": pull_request_number})
 
-    def get_column_items(self, owner, name, project_number, prev_column_id, start_cards_cursor=''):
-        return self.execute_query('''
-        query ($owner: String!, $name: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor:
-        String) {
-  repository(owner: $owner, name: $name) {
+    def get_column_items(self, owner, name, project_number, prev_column_id, start_cards_cursor='',
+                         is_org_project=False):
+        query_args = {"owner": owner, "name": name, "projectNumber": project_number, "prevColumnID": prev_column_id,
+                      "start_cards_cursor": start_cards_cursor}
+        query = '''
     project(number: $projectNumber) {
       name
       id
@@ -831,13 +566,22 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
     }
   }
 }
-''', {"owner": owner, "name": name, "projectNumber": project_number, "prevColumnID": prev_column_id,
-            "start_cards_cursor": start_cards_cursor})
+'''
+        if is_org_project:
+            # replace repository query with org query and remove name for args
+            query_prefix = '''query ($owner: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor: String) {
+            organization(login: $owner) {\n'''
+            del query_args['name']
+        else:
+            query_prefix = '''query ($owner: String!, $name: String!, $projectNumber: Int!, $prevColumnID: String!, $start_cards_cursor: String) {
+            repository(owner: $owner, name: $name) {\n'''
+        query = query_prefix + query
+        return self.execute_query(query, query_args)
 
-    def get_first_column_items(self, owner, name, project_number, start_cards_cursor=''):
-        return self.execute_query('''
-            query ($owner: String!, $name: String!, $projectNumber: Int!, $start_cards_cursor: String) {
-      repository(owner: $owner, name: $name) {
+    def get_first_column_items(self, owner, name, project_number, start_cards_cursor='', is_org_project=False):
+        query_args = {"owner": owner, "name": name, "projectNumber": project_number,
+                      "start_cards_cursor": start_cards_cursor}
+        query = '''
         project(number: $projectNumber) {
           name
           id
@@ -916,7 +660,17 @@ query ($owner: String!, $name: String!, $prNumber: Int!) {
         }
       }
     }
-    ''', {"owner": owner, "name": name, "projectNumber": project_number, "start_cards_cursor": start_cards_cursor})
+    '''
+        if is_org_project:
+            # replace repository query with org query and remove name for args
+            query_prefix = '''query ($owner: String!, $projectNumber: Int!, $start_cards_cursor: String) {
+            organization(login: $owner) {\n'''
+            del query_args['name']
+        else:
+            query_prefix = '''query ($owner: String!, $name: String!, $projectNumber: Int!, $start_cards_cursor: String) {
+            repository(owner: $owner, name: $name) {\n'''
+        query = query_prefix + query
+        return self.execute_query(query, query_args)
 
     def un_archive_card(self, card_id):
         return self.execute_query(''' mutation ($card_id: ID!, $isArchived: Boolean){
