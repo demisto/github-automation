@@ -15,8 +15,6 @@ from github_automation.management.configuration import Configuration
 MOCK_FOLDER_PATH = os.path.join(os.getcwd(), "tests", "mock_data")
 
 
-# TODO: Add pull request tests
-
 def test_project():
     project = Project(**parse_project({
         "name": "test",
