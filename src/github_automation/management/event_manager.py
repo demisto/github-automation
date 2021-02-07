@@ -38,6 +38,8 @@ class EventManager(object):
                                                 project_number=self.config.project_number,
                                                 is_org_project=self.config.is_org_project)
 
+        for attr in dir(layout):
+            print("obj.%s = %r" % (attr, getattr(layout, attr)))
         prev_cursor = ''
         project = get_project_from_response(layout, self.config.is_org_project)
         column_edges = project['columns']['edges']
