@@ -40,7 +40,7 @@ class EventManager(object):
 
         prev_cursor = ''
         project = get_project_from_response(layout, self.config.is_org_project)
-        column_edges = project['columns']['edges']
+        column_edges = project.get('columns', {}).get('edges', {}) if project else {}
         for index, column in enumerate(column_edges):
             if column_name == column['node']['name']:
                 if index != 0:
