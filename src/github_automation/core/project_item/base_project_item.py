@@ -17,11 +17,12 @@ def extract_assignees(assignee_edges):
 def extract_project_cards(project_cards):
     card_id_project = {}
     for node in project_cards.get('nodes', []):
-        card_id_project[node['id']] = {
-            "project_number": node['project']['number']
-        }
-        if 'column' in node and node['column'] and 'name' in node['column']:
-            card_id_project[node['id']]['project_column'] = node['column']['name']
+        if node.get('project'):
+            card_id_project[node['id']] = {
+                "project_number": node['project']['number']
+            }
+            if 'column' in node and node['column'] and 'name' in node['column']:
+                card_id_project[node['id']]['project_column'] = node['column']['name']
 
     return card_id_project
 
