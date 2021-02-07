@@ -1013,7 +1013,7 @@ def test_loading_org_project():
     config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
     config.load_properties()
     config.sort = True
-    config.is_organization_project = True
+    config.is_org_project = True
 
     class MockClient(object):
         def delete_project_card(*args, **kwargs):

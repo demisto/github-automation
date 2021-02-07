@@ -377,7 +377,7 @@ def test_get_prev_column_org_project():
                            event=json.dumps(event))
     manager.config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
     manager.config.load_properties()
-    manager.config.is_organization_project = True
+    manager.config.is_org_project = True
 
     assert manager.get_prev_column_cursor("Queue") == ""
     assert manager.get_prev_column_cursor("In progress") == 1
@@ -1045,7 +1045,7 @@ def test_load_org_project_column():
     manager = EventManager(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'), client=client, event=json.dumps(event))
     manager.config = Configuration(os.path.join(MOCK_FOLDER_PATH, 'conf.ini'))
     manager.config.load_properties()
-    manager.config.is_organization_project = True
+    manager.config.is_org_project = True
 
     project1 = manager.load_project_column("Queue")
     assert project1.columns["Queue"].name == "Queue"

@@ -5,17 +5,17 @@ def get_first_column_items(client, config):
     response = client.get_first_column_items(owner=config.project_owner,
                                              name=config.repository_name,
                                              project_number=config.project_number,
-                                             is_org_project=config.is_organization_project)
-    project_cards = get_project_from_response(response, config.is_organization_project)['columns']['nodes'][0]['cards']
+                                             is_org_project=config.is_org_project)
+    project_cards = get_project_from_response(response, config.is_org_project)['columns']['nodes'][0]['cards']
     cards_page_info = project_cards['pageInfo']
     while cards_page_info['hasNextPage']:
         new_response = client.get_first_column_items(owner=config.project_owner,
                                                      name=config.repository_name,
                                                      project_number=config.project_number,
                                                      start_cards_cursor=cards_page_info['endCursor'],
-                                                     is_org_project=config.is_organization_project)
+                                                     is_org_project=config.is_org_project)
         new_cards = get_project_from_response(new_response,
-                                              config.is_organization_project)['columns']['nodes'][0]['cards']
+                                              config.is_org_project)['columns']['nodes'][0]['cards']
         project_cards['edges'].extend(new_cards['edges'])
         cards_page_info = new_cards['pageInfo']
 
@@ -27,8 +27,8 @@ def get_column_items_with_prev_column(client, config, prev_cursor):
                                        name=config.repository_name,
                                        project_number=config.project_number,
                                        prev_column_id=prev_cursor,
-                                       is_org_project=config.is_organization_project)
-    project_cards = get_project_from_response(response, config.is_organization_project)['columns']['nodes'][0]['cards']
+                                       is_org_project=config.is_org_project)
+    project_cards = get_project_from_response(response, config.is_org_project)['columns']['nodes'][0]['cards']
     cards_page_info = project_cards['pageInfo']
     while cards_page_info['hasNextPage']:
         new_response = client.get_column_items(owner=config.project_owner,
@@ -36,9 +36,9 @@ def get_column_items_with_prev_column(client, config, prev_cursor):
                                                project_number=config.project_number,
                                                prev_column_id=prev_cursor,
                                                start_cards_cursor=cards_page_info['endCursor'],
-                                               is_org_project=config.is_organization_project)
+                                               is_org_project=config.is_org_project)
         new_cards = get_project_from_response(new_response,
-                                              config.is_organization_project)['columns']['nodes'][0]['cards']
+                                              config.is_org_project)['columns']['nodes'][0]['cards']
         project_cards['edges'].extend(new_cards['edges'])
         cards_page_info = new_cards['pageInfo']
 

@@ -69,7 +69,7 @@ class Configuration(object):
         self.cant_have_labels = []
         self.column_names = []
         self.column_rule_desc_order = []
-        self.is_organization_project = False
+        self.is_org_project = False
 
         # Actions
         self.remove = False
