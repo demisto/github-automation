@@ -36,11 +36,11 @@ class EventManager(object):
         layout = self.client.get_project_layout(owner=self.config.project_owner,
                                                 repository_name=self.config.repository_name,
                                                 project_number=self.config.project_number,
-                                                is_org_project=self.config.is_organization_project)
+                                                is_org_project=self.config.is_org_project)
 
         prev_cursor = ''
-        project = get_project_from_response(layout, self.config.is_organization_project)
-        column_edges = project['columns']['edges']
+        project = get_project_from_response(layout, self.config.is_org_project)
+        column_edges = project.get('columns', {}).get('edges', {}) if project else {}
         for index, column in enumerate(column_edges):
             if column_name == column['node']['name']:
                 if index != 0:
@@ -56,7 +56,7 @@ class EventManager(object):
         else:
             response = get_first_column_items(self.client, self.config)
 
-        project = get_project_from_response(response, self.config.is_organization_project)
+        project = get_project_from_response(response, self.config.is_org_project)
         return Project(**parse_project(project, config=self.config))
 
     def manage_item_in_project(self, item):

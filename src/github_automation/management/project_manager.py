@@ -51,12 +51,12 @@ class ProjectManager(object):
         layout = self.client.get_project_layout(owner=self.config.project_owner,
                                                 repository_name=self.config.repository_name,
                                                 project_number=self.config.project_number,
-                                                is_org_project=self.config.is_organization_project)
+                                                is_org_project=self.config.is_org_project)
 
-        layout_project = get_project_from_response(layout, self.config.is_organization_project)
+        layout_project = get_project_from_response(layout, self.config.is_org_project)
         column_edges = layout_project['columns']['edges']
         builder = get_first_column_items(self.client, self.config)
-        builder_project = get_project_from_response(builder, self.config.is_organization_project)
+        builder_project = get_project_from_response(builder, self.config.is_org_project)
         for index, column in enumerate(column_edges):
             if column['node']['name'] in self.config.column_names:
                 if index == 0:
@@ -64,7 +64,7 @@ class ProjectManager(object):
                 else:
                     prev_cursor = column_edges[index - 1]['cursor']
                     column_response = get_column_items_with_prev_column(self.client, self.config, prev_cursor)
-                    column_project = get_project_from_response(column_response, self.config.is_organization_project)
+                    column_project = get_project_from_response(column_response, self.config.is_org_project)
                     builder_project['columns']['nodes'].extend(
                         column_project['columns']['nodes'])
         return Project(**parse_project(builder_project, self.config))
