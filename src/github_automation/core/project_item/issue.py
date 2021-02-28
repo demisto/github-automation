@@ -48,4 +48,4 @@ class Issue(BaseProjectItem):
         self.pull_request = pull_request
 
     def __str__(self):
-        return 'issue'
+        return f'issue #{self.number}'

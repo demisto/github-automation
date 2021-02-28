@@ -147,7 +147,7 @@ def test_set_issue_to_issue_card():
     )
     card = ItemCard("id", item=issue)
     assert card.id == 'id'
-    assert card.issue == issue
+    assert card.item == issue
 
 
 def test_set_pull_request_to_item_card():
@@ -164,7 +164,7 @@ def test_set_pull_request_to_item_card():
     )
     card = ItemCard("id", item=pull_request)
     assert card.id == 'id'
-    assert card.pull_request == pull_request
+    assert card.item == pull_request
 
 
 def test_project_empty_card():
@@ -220,12 +220,12 @@ def test_add_card_to_column():
 
     # Sorting
     column_object.sort_cards(mock_client, config)
-    card_titles_in_column = [card.issue.title for card in column_object.cards]
+    card_titles_in_column = [card.item.title for card in column_object.cards]
     assert card_titles_in_column == ['issue 3', 'issue 2']
 
     # Adding in the middle
     column_object.add_card("id", issue_to_inject, mock_client)
-    card_titles_in_column = [card.issue.title for card in column_object.cards]
+    card_titles_in_column = [card.item.title for card in column_object.cards]
     assert card_titles_in_column == ['issue 3', 'issue 4', 'issue 2']
 
     # Higher priority addition
@@ -238,7 +238,7 @@ def test_add_card_to_column():
     issue_to_inject2.set_priority(DEFAULT_PRIORITY_LIST)
 
     column_object.add_card("id", issue_to_inject2, mock_client)
-    card_titles_in_column = [card.issue.title for card in column_object.cards]
+    card_titles_in_column = [card.item.title for card in column_object.cards]
     assert card_titles_in_column == ['issue 5', 'issue 3', 'issue 4', 'issue 2']
 
     # Lower priority addition
@@ -249,7 +249,7 @@ def test_add_card_to_column():
     )
 
     column_object.add_card("id", pr_to_inject3, mock_client)
-    card_titles_in_column = [card.get_item().title for card in column_object.cards]
+    card_titles_in_column = [card.item.title for card in column_object.cards]
     assert card_titles_in_column == ['issue 5', 'issue 3', 'issue 4', 'issue 2', "pull request 6"]
 
     # Same priority different number
@@ -260,7 +260,7 @@ def test_add_card_to_column():
     )
 
     column_object.add_card("id", pr_to_inject4, mock_client)
-    card_titles_in_column = [card.get_item().title for card in column_object.cards]
+    card_titles_in_column = [card.item.title for card in column_object.cards]
     assert card_titles_in_column == ['issue 5', 'issue 3', 'issue 4', 'issue 2', "pull request 7", "pull request 6"]
 
 
@@ -290,7 +290,7 @@ def test_sort_column():
         ])
 
     column_object.sort_cards(mock_client, config)
-    card_titles_in_column = [card.get_item().title for card in column_object.cards]
+    card_titles_in_column = [card.item.title for card in column_object.cards]
 
     assert card_titles_in_column == ['pull request 3', "issue 4", 'issue 2']
 
@@ -487,7 +487,7 @@ def test_adding_item():
             return
 
     project.add_items(ClientMock, issues, {"1"}, config)
-    assert project.columns['Queue'].cards[0].issue.title == "Rony"
+    assert project.columns['Queue'].cards[0].item.title == "Rony"
 
     # testing non existent column
     with pytest.raises(Exception) as err:
@@ -508,7 +508,7 @@ def test_adding_item():
         "2": issue2
     }
     project.add_items(ClientMock, issues2, {"2"}, config)
-    assert project.columns['Queue'].cards[0].issue.title == "Rony"
+    assert project.columns['Queue'].cards[0].item.title == "Rony"
 
 
 def test_no_card_content():

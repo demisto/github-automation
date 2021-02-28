@@ -23,6 +23,8 @@ class ProjectManager(object):
 
     def construct_issue_object(self, github_issues):
         issues = {}
+        if 'edges' not in github_issues:
+            return issues
         for edge in github_issues['edges']:
             node_data = edge['node']
             issue_labels = get_labels(node_data['labels']['edges'])

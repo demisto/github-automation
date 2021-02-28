@@ -710,13 +710,13 @@ def test_load_repo_project_column():
     project1 = manager.load_project_column("Queue")
     assert project1.columns["Queue"].name == "Queue"
     assert len(project1.columns["Queue"].cards) == 2
-    assert project1.columns["Queue"].cards[0].issue.title == "title"
+    assert project1.columns["Queue"].cards[0].item.title == "title"
     assert project1.columns["Queue"].cards[0].id == "id="
 
     project2 = manager.load_project_column("In progress")
     assert project2.columns["In progress"].name == "In progress"
     assert len(project2.columns["In progress"].cards) == 2
-    assert project2.columns["In progress"].cards[0].issue.title == "title2"
+    assert project2.columns["In progress"].cards[0].item.title == "title2"
     assert project2.columns["In progress"].get_card_id("id2=") == "cardid2="
 
 
@@ -1050,13 +1050,13 @@ def test_load_org_project_column():
     project1 = manager.load_project_column("Queue")
     assert project1.columns["Queue"].name == "Queue"
     assert len(project1.columns["Queue"].cards) == 2
-    assert project1.columns["Queue"].cards[0].issue.title == "title"
+    assert project1.columns["Queue"].cards[0].item.title == "title"
     assert project1.columns["Queue"].cards[0].id == "id="
 
     project2 = manager.load_project_column("In progress")
     assert project2.columns["In progress"].name == "In progress"
     assert len(project2.columns["In progress"].cards) == 2
-    assert project2.columns["In progress"].cards[0].issue.title == "title2"
+    assert project2.columns["In progress"].cards[0].item.title == "title2"
     assert project2.columns["In progress"].get_card_id("id2=") == "cardid2="
 
 
