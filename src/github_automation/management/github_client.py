@@ -51,11 +51,11 @@ class GraphQLClient(object):
                     query ($after: String, $owner: String!, $name: String!, $milestone: String){
                       repository(owner: $owner, name: $name) {
                         issues(first: 100, after:$after, states: OPEN, filterBy:{milestone: $milestone}) {
+                          pageInfo {
+                            hasNextPage
+                            endCursor
+                          }
                           edges {
-                            pageInfo {
-                              hasNextPage
-                              endCursor
-                            }
                             cursor
                             node {
                             projectCards(first:5){
