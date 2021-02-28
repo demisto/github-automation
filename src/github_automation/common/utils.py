@@ -89,5 +89,5 @@ def get_project_cards(project):
             if 'nodes' in columns and isinstance(columns['nodes'], list):
                 nodes = columns['nodes']
                 if len(nodes) > 0 and 'cards' in nodes[0]:
-                    return nodes[0]
+                    return nodes[0]['cards']
     return {}
