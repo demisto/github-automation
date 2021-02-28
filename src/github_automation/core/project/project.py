@@ -46,20 +46,9 @@ class ItemCard(object):
 
         self.id = id
         self.cursor = cursor
-        self.issue = item if isinstance(item, Issue) else None
-        self.pull_request = item if isinstance(item, PullRequest) else None
-
-        self.item_id = self.issue.id if self.issue else self.pull_request.id
-        self.item_title = self.issue.title if self.issue else self.pull_request.title
-
-    def get_item(self):
-        if self.issue:
-            return self.issue
-        else:
-            return self.pull_request
-
-    def get_labels(self):
-        return self.get_item().labels
+        self.item = item
+        self.item_id = self.item.id if self.item else ""
+        self.item_title = self.item.title if self.item else ""
 
 
 def _extract_card_node_data(column_node: dict, config: Configuration):
@@ -94,7 +83,7 @@ class ProjectColumn(object):
 
     def add_card(self, card_id: str, new_item: Union[Issue, PullRequest], client: GraphQLClient):
         insert_after_position = len(self.cards) - 1  # In case it should be the lowest issue
-        if not self.cards or new_item > self.cards[0].get_item():
+        if not self.cards or new_item > self.cards[0].item:
             self.cards.insert(0, ItemCard(id=card_id, item=new_item))
             try:
                 client.add_to_column(card_id=card_id,
@@ -116,7 +105,7 @@ class ProjectColumn(object):
             return
 
         for i in range(len(self.cards) - 1):
-            if self.cards[i].get_item() > new_item > self.cards[i + 1].get_item():
+            if self.cards[i].item > new_item > self.cards[i + 1].item:
                 insert_after_position = i
                 break
 
@@ -165,11 +154,11 @@ class ProjectColumn(object):
         self.cards.insert(new_index, deepcopy(old_card))
 
     def sort_cards(self, client, config):
-        sorted_cards = deepcopy(sorted(self.cards, key=lambda card: card.get_item(), reverse=True))
+        sorted_cards = deepcopy(sorted(self.cards, key=lambda card: card.item, reverse=True))
         for index, card in enumerate(sorted_cards):
             if card.id != self.cards[index].id:
                 self.move_card_in_list(card.id, index)
-                config.logger.info(f"Moving {str(card.get_item())} '{card.item_title}' in column "
+                config.logger.info(f"Moving {str(card.item)} '{card.item_title}' in column "
                                    f"'{self.name}' to position: {index}")
                 if index == 0:
                     try:
@@ -362,10 +351,10 @@ class Project(object):
 
             indexes_to_delete = []
             for index, card in enumerate(column.cards):
-                if not is_matching_project_item(card.get_labels(), config.must_have_labels,
+                if not is_matching_project_item(card.item.labels, config.must_have_labels,
                                                 config.cant_have_labels, config.filter_labels):
                     indexes_to_delete.append(index)
-                    self.remove_item(client, card.item_title, card.id, config, card.get_item())
+                    self.remove_item(client, card.item_title, card.id, config, card.item)
 
             for index_to_delete in sorted(indexes_to_delete, reverse=True):  # Removing from bottom to top
                 del column.cards[index_to_delete]

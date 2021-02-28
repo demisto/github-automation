@@ -532,12 +532,12 @@ def test_loading_repo_project():
 
     # assert there're 3 items 'In Progress' column
     manager.project.sort_items_in_columns(client, config)
-    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    items = [card.item.title for card in manager.project.columns['In progress'].cards]
     assert items == ['issue 3', 'issue 2', "pull_request 1"]
 
     # remove a single issue from the column
     manager.project.columns['In progress'].remove_card("56565=")
-    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    items = [card.item.title for card in manager.project.columns['In progress'].cards]
     assert len(items) == 2
     assert manager.project.is_in_column("In progress", "1234=") is True
     assert manager.project.is_in_column("In progress", "76566=") is True
@@ -545,7 +545,7 @@ def test_loading_repo_project():
 
     # remove a single pull request from the column
     manager.project.columns['In progress'].remove_card("76565=")
-    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    items = [card.item.title for card in manager.project.columns['In progress'].cards]
     assert len(items) == 1
     assert manager.project.is_in_column("In progress", "1234=") is True
     assert manager.project.is_in_column("In progress", "76566=") is False
@@ -1081,12 +1081,12 @@ def test_loading_org_project():
 
     # assert there're 3 items 'In Progress' column
     manager.project.sort_items_in_columns(client, config)
-    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    items = [card.item.title for card in manager.project.columns['In progress'].cards]
     assert items == ['issue 3', 'issue 2', "pull_request 1"]
 
     # remove a single issue from the column
     manager.project.columns['In progress'].remove_card("56565=")
-    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    items = [card.item.title for card in manager.project.columns['In progress'].cards]
     assert len(items) == 2
     assert manager.project.is_in_column("In progress", "1234=") is True
     assert manager.project.is_in_column("In progress", "76566=") is True
@@ -1094,7 +1094,7 @@ def test_loading_org_project():
 
     # remove a single pull request from the column
     manager.project.columns['In progress'].remove_card("76565=")
-    items = [card.get_item().title for card in manager.project.columns['In progress'].cards]
+    items = [card.item.title for card in manager.project.columns['In progress'].cards]
     assert len(items) == 1
     assert manager.project.is_in_column("In progress", "1234=") is True
     assert manager.project.is_in_column("In progress", "76566=") is False
