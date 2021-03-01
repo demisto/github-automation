@@ -7,7 +7,7 @@ As an example you can take a look at:
 closed_issues_column = Done
 project_owner = ronykoz
 repository_name = test
-is_organization_project = false
+is_org_project = false
 project_number = 1
 priority_list = Critical,High,Medium,Low
 filter_labels=bug
@@ -50,7 +50,7 @@ Here is a quick explanation about their meaning:
 - merged_pull_requests_column - The column name of the merged pull requests.
 - project_owner - The project owner or organization the repository is in.
 - repository_name - The name of the repository containing the project.
-- is_organization_project - Whether the managed project is an organization level project linked to a repository - optional values are true/false.
+- is_org_project - Whether the managed project is an organization level project linked to a repository - optional values are true/false.
 - project_number - The project number you will want to manage
 - priority_list - The list of priorities you want to order your issues by, descending order.(The default is Critical,High,Medium,Low - for labels with the same power use `||` - i.e. `priority1||priority2`)
 - filter_labels - The labels you want to filter the issues that get into the project by.(In case of multiple labels we support CSV format and the condition is or between the labels, Please choose a strict filter to reduce API usage)
