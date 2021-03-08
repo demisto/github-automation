@@ -12,14 +12,14 @@ setup(
     setup_requires=['setuptools_scm'],
     url='https://github.com/demisto/github-automation',
     license='MIT',
-    author='Rony Kozakish',
+    author='Rony Kozakish & Dean Arbel',
     author_email='',
     description='GitHub automatic project manager tool',
     install_requires=[
         'click',
         'requests',
         'python-dateutil',
-        'gql'
+        'gql==3.0.0a5'
     ],
     packages=find_packages("src"),
     package_dir={"": "src"},

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from copy import deepcopy
 
-from github_automation.core.issue.issue import Issue, parse_issue
+from github_automation.core.project_item.issue import Issue, parse_issue
 
 
 def test_parse_issue():
@@ -40,6 +40,8 @@ def test_parse_issue():
                     "willCloseTarget": True,
                     "source": {
                         "__typename": "PullRequest",
+                        "id": "42",
+                        "title": "test1",
                         "state": "OPEN",
                         "isDraft": False,
                         "assignees": {
@@ -149,6 +151,8 @@ def test_issue_params():
                     "willCloseTarget": True,
                     "source": {
                         "__typename": "PullRequest",
+                        "id": "43",
+                        "title": "test2",
                         "state": "OPEN",
                         "isDraft": False,
                         "assignees": {

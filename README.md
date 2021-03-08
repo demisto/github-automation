@@ -6,18 +6,19 @@ This tool will help you maintain and organize your GitHub project using an autom
 ## Use case
 In case you work with GitHub projects, and maintain a board for your project this tool is for you.
 As we offer a functionality of managing your board in GitHub project boards.
-This is by searching for the issues you wish to include in the board(By a set of filter you provide) and placing them in the right place in your board for you - both in the correct column and the correct place within the column.
+This is by searching for the issues or pull request you wish to include in the board (By a set of filter you provide) and placing them in the right place in your board for you - both in the correct column and the correct place within the column.
 
 The supported functionality is:
-* Adding new issues to your board.
-* Moving issues to the correct column of your project, with the priority in mind.
-* Sorting your issues within your existing columns by their priorities and creation times.
-* Removing issues that fail to meet your issue filters.
+* Adding new issues or pull requests to your board.
+* Moving issues or pull requests to the correct column of your project, with the priority in mind.
+* Sorting your issues or pull requests within your existing columns by their priorities and creation times.
+* Removing issues or pull requests that fail to meet your filters.
 ___
 In order to configure github-automation you will need to create an `.ini` file, here is an example:
 ```buildoutcfg
 [General]
 closed_issues_column = Done
+merged_pull_requests_column = Merged
 project_owner = ronykoz
 repository_name = test
 project_number = 1
@@ -38,11 +39,13 @@ issue.assignees = false
 
 [In progress]
 issue.assignees = true
+pull_request.assignees = true
 
 [Review in progress]
 issue.assignees = true
 issue.pull_request = true
 issue.pull_request.review_requested = true
+pull_request.review_requested = true
 
 [Waiting for Docs]
 issue.assignees = true
@@ -53,7 +56,7 @@ issue.pull_request.assignees = ronykoz
 
 ```
 While the General and Actions sections must be in the `.ini` the rest of the sections are dynamic, and each represents the rules for each of your columns.
-The keys listed in the column section are the attributes of the classes which represent the issue you are working on. For a more detailed explanation please click [here](https://github.com/demisto/github-automation/blob/master/docs/ini_file.md)
+The keys listed in the column section are the attributes of the classes which represent the issue or pull request you are working on. For a more detailed explanation please click [here](https://github.com/demisto/github-automation/blob/master/docs/ini_file.md)
 
 
 ### GitHub Actions
