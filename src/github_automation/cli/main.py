@@ -84,7 +84,7 @@ def event_manager(**kwargs):
     return manager.run()
 
 
-@main.resultcallback()
+@main.result_callback()
 def exit_from_program(result=0, **kwargs):
     sys.exit(result)
 
